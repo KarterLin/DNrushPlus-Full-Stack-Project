@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-TW" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>隊規、入隊標準 - DiviNe Kartrider Team</title>
+  <meta name="description" content="DiviNe車隊入隊標準與隊規">
+  <meta name="keywords" content="">
+
+  <!-- Favicons -->
+  <link href="/assets/img/DN-icon.jpg" rel="icon">
+  <link href="/assets/img/favicon.png" rel="apple-touch-icon">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Raleway:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="/assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+  <link href="/assets/vendor/aos/aos.css" rel="stylesheet">
+  <link href="/assets/vendor/glightbox/css/glightbox.min.css" rel="stylesheet">
+  <link href="/assets/vendor/swiper/swiper-bundle.min.css" rel="stylesheet">
+
+  <!-- Main CSS File -->
+  <link href="/assets/css/main.css" rel="stylesheet">
+</head>
+
+<body class="index-page">
+
+  <header id="header" class="header d-flex align-items-center fixed-top">
+    <div class="container-fluid container-xl position-relative d-flex align-items-center">
+
+      <a href="/" class="logo d-flex align-items-center me-auto">
+        <h1 class="sitename">DN Kartrider Team</h1>
+      </a>
+
+      <nav id="navmenu" class="navmenu">
+        <ul>
+          <li th:each="item : ${navigationItems}" th:if="${item.parent == null}">
+            <a th:href="${item.url}" th:text="${item.title}"></a>
+            
+            <!-- 子選單 -->
+            <ul th:if="${item.children != null and !item.children.isEmpty()}">
+              <li th:each="child : ${item.children}">
+                <a th:href="${child.url}" th:text="${child.title}"></a>
+                
+                <!-- 孫選單 -->
+                <ul th:if="${child.children != null and !child.children.isEmpty()}">
+                  <li th:each="grandchild : ${child.children}">
+                    <a th:href="${grandchild.url}" th:text="${grandchild.title}"></a>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+        </ul>
+        <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main">
+    <!-- Page Title -->
+    <div class="page-title">
+      <div class="container">
+        <h1 th:text="${rulesTitle}">填寫入隊申請前請先詳閱</h1>
+        <nav class="breadcrumbs">
+          <ol>
+            <li><a href="/">首頁</a></li>
+            <li th:text="${rulesSubtitle}">隊規、入隊標準</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+
+    <!-- Rules Content -->
+    <section class="section">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="content">
+              <h2>入隊標準</h2>
+              <p>歡迎對跑跑卡丁車有熱忱的玩家加入DiviNe車隊！以下是我們的入隊標準：</p>
+              
+              <h3>競速組入隊標準</h3>
+              <ul>
+                <li>具備基本的競速技巧</li>
+                <li>能夠配合車隊活動時間</li>
+                <li>有良好的團隊合作精神</li>
+                <li>遵守車隊規章制度</li>
+              </ul>
+              
+              <h3>道具組入隊標準</h3>
+              <ul>
+                <li>熟悉道具使用技巧</li>
+                <li>具備戰術思維</li>
+                <li>能夠配合隊友進行戰術配合</li>
+                <li>有良好的溝通能力</li>
+              </ul>
+              
+              <h2>隊規</h2>
+              <p>為了維護車隊的良好風氣，請所有隊員遵守以下規定：</p>
+              
+              <h3>基本規範</h3>
+              <ul>
+                <li>尊重所有隊員，不得進行人身攻擊</li>
+                <li>不得使用外掛或任何作弊程式</li>
+                <li>保持遊戲中的良好形象</li>
+                <li>積極參與車隊活動</li>
+              </ul>
+              
+              <h3>活動規範</h3>
+              <ul>
+                <li>準時參加車隊活動</li>
+                <li>如有事無法參加，請提前告知</li>
+                <li>活動期間保持專注，不得分心</li>
+                <li>服從隊長和幹部的指揮</li>
+              </ul>
+              
+              <h3>處罰條例</h3>
+              <ul>
+                <li>違反隊規者將視情節輕重給予警告或除名</li>
+                <li>使用外掛者直接除名</li>
+                <li>惡意攻擊隊員者將被除名</li>
+                <li>連續三次無故缺席活動者將被除名</li>
+              </ul>
+              
+              <div class="text-center mt-5">
+                <a href="/#contact" class="btn btn-primary">我要申請入隊</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer id="footer" class="footer dark-background">
+    <div class="container footer-top">
+      <div class="row gy-4">
+        <div class="col-lg-4 col-md-6 footer-about">
+          <a href="/" class="logo d-flex align-items-center">
+            <span class="sitename">DN車隊</span>
+          </a>
+          <div class="footer-contact pt-3">
+            <br>
+            <p>Since 2007.</p>
+            <br>
+            <br>
+            <br>
+          </div>
+          <div class="social-links d-flex mt-4">
+            <a href="https://www.facebook.com/p/-DN--100063646887032/" target="_blank"><i class="bi bi-facebook"></i></a>
+            <a href="https://www.instagram.com/yunhong_7k/" target="_blank"><i class="bi bi-instagram"></i></a>
+            <a href="https://github.com/KarterLin/" target="_blank"><i class="bi bi-github"></i></a>
+          </div>
+        </div>
+
+        <div class="col-lg-4 col-md-3 footer-links">
+          <img src="/assets/img/logo5.jpg" class="img-fluid" float-start alt="">
+        </div>
+
+        <div class="col-lg-4 col-md-6 ms-auto">
+          <div class="footer-links custom-center float-end">
+            <h4>網內連結</h4>
+            <ul class="list-unstyled">
+              <li><i class="bi bi-chevron-right"></i> <a href="/#hero">首頁</a></li>
+              <li><i class="bi bi-chevron-right"></i> <a href="/#about">車隊介紹</a></li>
+              <li><i class="bi bi-chevron-right"></i> <a href="/#services">隊史館</a></li>
+              <li><i class="bi bi-chevron-right"></i> <a href="/#portfolio">隊聚活動</a></li>
+              <li><i class="bi bi-chevron-right"></i> <a href="/#team">Team</a></li>
+              <li><i class="bi bi-chevron-right"></i> <a href="/rules">入隊標準</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scroll Top -->
+  <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center">
+    <i class="bi bi-arrow-up-short"></i>
+  </a>
+
+  <!-- Preloader -->
+  <div id="preloader"></div>
+
+  <!-- Vendor JS Files -->
+  <script src="/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="/assets/vendor/php-email-form/validate.js"></script>
+  <script src="/assets/vendor/aos/aos.js"></script>
+  <script src="/assets/vendor/glightbox/js/glightbox.min.js"></script>
+  <script src="/assets/vendor/purecounter/purecounter_vanilla.js"></script>
+  <script src="/assets/vendor/swiper/swiper-bundle.min.js"></script>
+  <script src="/assets/vendor/imagesloaded/imagesloaded.pkgd.min.js"></script>
+  <script src="/assets/vendor/isotope-layout/isotope.pkgd.min.js"></script>
+
+  <!-- Main JS File -->
+  <script src="/assets/js/main.js"></script>
+
+</body>
+</html>

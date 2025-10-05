@@ -1,0 +1,61 @@
+spring:
+  application:
+    name: dnrush-plus-website
+  
+  # 資料庫配置 (使用 MySQL)
+  datasource:
+    url: jdbc:mysql://localhost:3306/dnrush_plus?useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8
+    username: karter
+    password: seal1127
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  
+  # JPA配置
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+  
+  # Thymeleaf配置
+  thymeleaf:
+    cache: false
+    prefix: classpath:/templates/
+    suffix: .html
+    encoding: UTF-8
+    mode: HTML
+  
+  # 靜態資源配置
+  web:
+    resources:
+      static-locations: classpath:/static/
+  
+  # 檔案上傳配置
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+# 伺服器配置
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+# 日誌配置
+logging:
+  level:
+    com.dnrush: DEBUG
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+# 自定義配置
+app:
+  upload:
+    path: uploads/
+  image:
+    base64:
+      prefix: data:image/jpeg;base64,

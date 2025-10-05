@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-TW" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>隊史館 - DiviNe Kartrider Team</title>
+  <meta name="description" content="DiviNe車隊歷史與成就">
+  <meta name="keywords" content="">
+
+  <!-- Favicons -->
+  <link href="/assets/img/DN-icon.jpg" rel="icon">
+  <link href="/assets/img/favicon.png" rel="apple-touch-icon">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Raleway:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="/assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+  <link href="/assets/vendor/aos/aos.css" rel="stylesheet">
+  <link href="/assets/vendor/glightbox/css/glightbox.min.css" rel="stylesheet">
+  <link href="/assets/vendor/swiper/swiper-bundle.min.css" rel="stylesheet">
+
+  <!-- Main CSS File -->
+  <link href="/assets/css/main.css" rel="stylesheet">
+</head>
+
+<body class="index-page">
+
+  <header id="header" class="header d-flex align-items-center fixed-top">
+    <div class="container-fluid container-xl position-relative d-flex align-items-center">
+
+      <a href="/" class="logo d-flex align-items-center me-auto">
+        <h1 class="sitename">DN Kartrider Team</h1>
+      </a>
+
+      <nav id="navmenu" class="navmenu">
+        <ul>
+          <li th:each="item : ${navigationItems}" th:if="${item.parent == null}">
+            <a th:href="${item.url}" th:text="${item.title}"></a>
+            
+            <!-- 子選單 -->
+            <ul th:if="${item.children != null and !item.children.isEmpty()}">
+              <li th:each="child : ${item.children}">
+                <a th:href="${child.url}" th:text="${child.title}"></a>
+                
+                <!-- 孫選單 -->
+                <ul th:if="${child.children != null and !child.children.isEmpty()}">
+                  <li th:each="grandchild : ${child.children}">
+                    <a th:href="${grandchild.url}" th:text="${grandchild.title}"></a>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+        </ul>
+        <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main">
+    <!-- Page Title -->
+    <div class="page-title">
+      <div class="container">
+        <h1 th:text="${servicesTitle}">團隊取得的佳績</h1>
+        <nav class="breadcrumbs">
+          <ol>
+            <li><a href="/">首頁</a></li>
+            <li th:text="${servicesSubtitle}">隊史館</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+
+    <!-- Service Details Content -->
+    <section class="section">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-8">
+            <div class="content">
+              <h2>端遊賽事成就</h2>
+              <p>DiviNe車隊在跑跑卡丁車端遊時代取得了輝煌的成就，以下是我們的主要戰績：</p>
+              
+              <h3>2007-2010年 初期發展</h3>
+              <ul>
+                <li>2007年1月3日車隊正式成立</li>
+                <li>2007年8月統一更名為DiviNe</li>
+                <li>多次獲得線上賽事冠軍</li>
+                <li>建立完善的車隊管理制度</li>
+              </ul>
+              
+              <h3>2011-2016年 黃金時期</h3>
+              <ul>
+                <li>連續多年獲得全國性賽事佳績</li>
+                <li>培養出多位職業選手</li>
+                <li>建立完整的訓練體系</li>
+                <li>與其他知名車隊建立良好關係</li>
+              </ul>
+              
+              <h2 id="MOB-Race">手遊賽事成就</h2>
+              <p>隨著跑跑卡丁車Rush+的推出，DiviNe車隊也積極參與手遊賽事：</p>
+              
+              <h3>2020-2021年 手遊起步</h3>
+              <ul>
+                <li>2020年5月12日創立Rush+車隊分部</li>
+                <li>快速適應手遊操作模式</li>
+                <li>建立手遊競速組和道具組</li>
+                <li>參與官方舉辦的各種賽事</li>
+              </ul>
+              
+              <h3>2022-2023年 手遊發展</h3>
+              <ul>
+                <li>在各大手遊賽事中取得優異成績</li>
+                <li>培養出多位手遊高手</li>
+                <li>建立手遊專屬的訓練方法</li>
+                <li>與手遊社群建立良好互動</li>
+              </ul>
+              
+              <h2>車隊榮譽</h2>
+              <p>DiviNe車隊成立至今，累積了無數的榮譽和成就：</p>
+              
+              <ul>
+                <li>跑跑卡丁車歷史最悠久的車隊之一</li>
+                <li>培養出多位職業選手</li>
+                <li>在端遊和手遊時代都取得優異成績</li>
+                <li>建立完善的車隊文化和制度</li>
+                <li>擁有超過100名活躍隊員</li>
+                <li>持續18年的車隊歷史</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div class="col-lg-4">
+            <div class="services-list">
+              <h4>相關連結</h4>
+              <a href="/#services" class="active">隊史館</a>
+              <a href="/#portfolio">隊聚活動</a>
+              <a href="/#team">團隊成員</a>
+              <a href="/rules">入隊標準</a>
+              <a href="/#contact">聯絡我們</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer id="footer" class="footer dark-background">
+    <div class="container footer-top">
+      <div class="row gy-4">
+        <div class="col-lg-4 col-md-6 footer-about">
+          <a href="/" class="logo d-flex align-items-center">
+            <span class="sitename">DN車隊</span>
+          </a>
+          <div class="footer-contact pt-3">
+            <br>
+            <p>Since 2007.</p>
+            <br>
+            <br>
+            <br>
+          </div>
+          <div class="social-links d-flex mt-4">
+            <a href="https://www.facebook.com/p/-DN--100063646887032/" target="_blank"><i class="bi bi-facebook"></i></a>
+            <a href="https://www.instagram.com/yunhong_7k/" target="_blank"><i class="bi bi-instagram"></i></a>
+            <a href="https://github.com/KarterLin/" target="_blank"><i class="bi bi-github"></i></a>
+          </div>
+        </div>
+
+        <div class="col-lg-4 col-md-3 footer-links">
+          <img src="/assets/img/logo5.jpg" class="img-fluid" float-start alt="">
+        </div>
+
+        <div class="col-lg-4 col-md-6 ms-auto">
+          <div class="footer-links custom-center float-end">
+            <h4>網內連結</h4>
+            <ul class="list-unstyled">
+              <li><i class="bi bi-chevron-right"></i> <a href="/#hero">首頁</a></li>
+              <li><i class="bi bi-chevron-right"></i> <a href="/#about">車隊介紹</a></li>
+              <li><i class="bi bi-chevron-right"></i> <a href="/#services">隊史館</a></li>
+              <li><i class="bi bi-chevron-right"></i> <a href="/#portfolio">隊聚活動</a></li>
+              <li><i class="bi bi-chevron-right"></i> <a href="/#team">Team</a></li>
+              <li><i class="bi bi-chevron-right"></i> <a href="/rules">入隊標準</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scroll Top -->
+  <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center">
+    <i class="bi bi-arrow-up-short"></i>
+  </a>
+
+  <!-- Preloader -->
+  <div id="preloader"></div>
+
+  <!-- Vendor JS Files -->
+  <script src="/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="/assets/vendor/php-email-form/validate.js"></script>
+  <script src="/assets/vendor/aos/aos.js"></script>
+  <script src="/assets/vendor/glightbox/js/glightbox.min.js"></script>
+  <script src="/assets/vendor/purecounter/purecounter_vanilla.js"></script>
+  <script src="/assets/vendor/swiper/swiper-bundle.min.js"></script>
+  <script src="/assets/vendor/imagesloaded/imagesloaded.pkgd.min.js"></script>
+  <script src="/assets/vendor/isotope-layout/isotope.pkgd.min.js"></script>
+
+  <!-- Main JS File -->
+  <script src="/assets/js/main.js"></script>
+
+</body>
+</html>
