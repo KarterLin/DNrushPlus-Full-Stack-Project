@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="zh-TW" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>圖片管理 - DN車隊管理後台</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="/assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+    
+    <!-- Custom styles -->
+    <style>
+        .sidebar {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            padding: 48px 0 0;
+            box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+        }
+        
+        .sidebar-sticky {
+            position: relative;
+            top: 0;
+            height: calc(100vh - 48px);
+            padding-top: .5rem;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+        
+        .navbar-brand {
+            padding-top: .75rem;
+            padding-bottom: .75rem;
+        }
+        
+        .navbar .navbar-toggler {
+            top: .25rem;
+            right: 1rem;
+        }
+
+        .image-card {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .image-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .image-actions {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: none;
+        }
+
+        .image-card:hover .image-actions {
+            display: block;
+        }
+
+        .image-info {
+            padding: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+        }
+    </style>
+</head>
+<body>
+    <header class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
+        <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3" href="/admin">DN車隊管理後台</a>
+        <button class="navbar-toggler position-absolute d-md-none collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </header>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- 左側導航欄 -->
+            <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin">
+                                <i class="bi bi-house"></i> 儀表板
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/navigation">
+                                <i class="bi bi-list"></i> 導航欄管理
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/content">
+                                <i class="bi bi-file-text"></i> 網站內容
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/admin/images">
+                                <i class="bi bi-image"></i> 圖片管理
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/team">
+                                <i class="bi bi-people"></i> 團隊成員
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/events">
+                                <i class="bi bi-calendar-event"></i> 隊聚活動
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/statistics">
+                                <i class="bi bi-graph-up"></i> 統計數據
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- 主要內容區 -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">圖片管理</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#uploadImageModal">
+                            <i class="bi bi-upload"></i> 上傳圖片
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 分類篩選 -->
+                <div class="mb-4">
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-primary active" data-filter="all">全部</button>
+                        <button type="button" class="btn btn-outline-primary" data-filter="hero">首頁橫幅</button>
+                        <button type="button" class="btn btn-outline-primary" data-filter="about">關於我們</button>
+                        <button type="button" class="btn btn-outline-primary" data-filter="event">隊聚活動</button>
+                        <button type="button" class="btn btn-outline-primary" data-filter="team">團隊成員</button>
+                    </div>
+                </div>
+
+                <!-- 圖片網格 -->
+                <div class="row">
+                    <div th:each="image : ${images}" class="col-md-4 image-card" th:data-category="${image.category}">
+                        <img th:src="${image.base64Data}" class="img-fluid" th:alt="${image.description}">
+                        <div class="image-info">
+                            <p class="mb-1" th:text="${image.description}">圖片描述</p>
+                            <small th:text="${image.category}">分類</small>
+                        </div>
+                        <div class="image-actions">
+                            <button class="btn btn-sm btn-light" 
+                                    th:data-id="${image.id}"
+                                    onclick="editImage(this.getAttribute('data-id'))">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" 
+                                    th:data-id="${image.id}"
+                                    onclick="deleteImage(this.getAttribute('data-id'))">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- 上傳/編輯圖片的Modal -->
+    <div class="modal fade" id="uploadImageModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">上傳圖片</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="imageForm">
+                        <input type="hidden" id="imageId" name="id">
+                        <div class="mb-3">
+                            <label for="imageFile" class="form-label">選擇圖片</label>
+                            <input type="file" class="form-control" id="imageFile" name="file" accept="image/*">
+                        </div>
+                        <div class="mb-3">
+                            <label for="category" class="form-label">分類</label>
+                            <select class="form-select" id="category" name="category" required>
+                                <option value="hero">首頁橫幅</option>
+                                <option value="about">關於我們</option>
+                                <option value="event">隊聚活動</option>
+                                <option value="team">團隊成員</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">描述</label>
+                            <input type="text" class="form-control" id="description" name="description">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="uploadImage()">上傳</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script>
+        function editImage(id) {
+            // 載入數據到表單
+            fetch(`/api/images/${id}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('imageId').value = data.id;
+                    document.getElementById('category').value = data.category;
+                    document.getElementById('description').value = data.description;
+                    
+                    // 顯示Modal
+                    new bootstrap.Modal(document.getElementById('uploadImageModal')).show();
+                });
+        }
+
+        function uploadImage() {
+            const formData = new FormData(document.getElementById('imageForm'));
+            
+            fetch('/admin/images/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(result => {
+                if (result === 'success') {
+                    location.reload();
+                } else {
+                    alert('上傳失敗');
+                }
+            });
+        }
+
+        function deleteImage(id) {
+            if (confirm('確定要刪除這張圖片嗎？')) {
+                fetch(`/admin/images/${id}`, {
+                    method: 'DELETE'
+                })
+                .then(response => response.text())
+                .then(result => {
+                    if (result === 'success') {
+                        location.reload();
+                    } else {
+                        alert('刪除失敗');
+                    }
+                });
+            }
+        }
+
+        // 圖片分類篩選
+        document.querySelectorAll('[data-filter]').forEach(button => {
+            button.addEventListener('click', function() {
+                const filter = this.dataset.filter;
+                
+                // 更新按鈕狀態
+                document.querySelectorAll('[data-filter]').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                this.classList.add('active');
+                
+                // 篩選圖片
+                document.querySelectorAll('.image-card').forEach(card => {
+                    if (filter === 'all' || card.dataset.category === filter) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

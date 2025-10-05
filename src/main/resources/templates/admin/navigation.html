@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh-TW" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>導航欄管理 - DN車隊管理後台</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="/assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+    
+    <!-- Custom styles -->
+    <style>
+        .sidebar {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            padding: 48px 0 0;
+            box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+        }
+        
+        .sidebar-sticky {
+            position: relative;
+            top: 0;
+            height: calc(100vh - 48px);
+            padding-top: .5rem;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+        
+        .navbar-brand {
+            padding-top: .75rem;
+            padding-bottom: .75rem;
+        }
+        
+        .navbar .navbar-toggler {
+            top: .25rem;
+            right: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <header class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
+        <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3" href="/admin">DN車隊管理後台</a>
+        <button class="navbar-toggler position-absolute d-md-none collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </header>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- 左側導航欄 -->
+            <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin">
+                                <i class="bi bi-house"></i> 儀表板
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/admin/navigation">
+                                <i class="bi bi-list"></i> 導航欄管理
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/content">
+                                <i class="bi bi-file-text"></i> 網站內容
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/images">
+                                <i class="bi bi-image"></i> 圖片管理
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/team">
+                                <i class="bi bi-people"></i> 團隊成員
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/events">
+                                <i class="bi bi-calendar-event"></i> 隊聚活動
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/statistics">
+                                <i class="bi bi-graph-up"></i> 統計數據
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- 主要內容區 -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">導航欄管理</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <button type="button" class="btn btn-primary" onclick="showAddNavigationModal()">
+                            <i class="bi bi-plus"></i> 新增導航項目
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 導航項目列表 -->
+                <div class="table-responsive">
+                    <table class="table table-striped table-sm">
+                        <thead>
+                            <tr>
+                                <th>標題</th>
+                                <th>URL</th>
+                                <th>排序</th>
+                                <th>父項目</th>
+                                <th>狀態</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="item : ${navigationItems}">
+                                <td th:text="${item.title}">首頁</td>
+                                <td>
+                                    <span th:text="${item.url}"></span>
+                                    <i class="bi bi-box-arrow-up-right" th:if="${item.openInNewTab}" title="在新分頁開啟"></i>
+                                </td>
+                                <td th:text="${item.sortOrder}">1</td>
+                                <td th:text="${item.parent != null ? item.parent.title : '-'}">-</td>
+                                <td>
+                                    <span th:if="${item.isActive}" class="badge bg-success">啟用</span>
+                                    <span th:unless="${item.isActive}" class="badge bg-danger">停用</span>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary" 
+                                            th:data-id="${item.id}"
+                                            th:onclick="'editNavigationItem(' + ${item.id} + ')'">
+                                        編輯
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" 
+                                            th:data-id="${item.id}"
+                                            th:onclick="'deleteNavigationItem(' + ${item.id} + ')'">
+                                        刪除
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- 新增/編輯導航項目的Modal -->
+    <div class="modal fade" id="addNavigationModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">新增導航項目</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="navigationForm" onsubmit="return false;">
+                        <input type="hidden" id="navigationId" name="id">
+                        <div class="mb-3">
+                            <label for="title" class="form-label">標題</label>
+                            <input type="text" class="form-control" id="title" name="title" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="url" class="form-label">URL</label>
+                            <input type="text" class="form-control" id="url" name="url" required>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="openInNewTab" name="openInNewTab">
+                            <label class="form-check-label" for="openInNewTab">在新分頁開啟</label>
+                        </div>
+                        <div class="mb-3">
+                            <label for="sortOrder" class="form-label">排序</label>
+                            <input type="number" class="form-control" id="sortOrder" name="sortOrder" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="parentId" class="form-label">父項目</label>
+                            <select class="form-select" id="parentId" name="parentId">
+                                <option value="">無</option>
+                                <option th:each="item : ${activeItems}"
+                                        th:if="${item.parent == null}"
+                                        th:value="${item.id}"
+                                        th:text="${item.title}">
+                                </option>
+                            </select>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="isActive" name="isActive" checked>
+                            <label class="form-check-label" for="isActive">啟用</label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="saveNavigationItem()">儲存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script>
+        // 顯示新增導航項目的 Modal
+        function showAddNavigationModal() {
+            // 重置表單
+            document.getElementById('navigationForm').reset();
+            document.getElementById('navigationId').value = '';
+            
+            // 更新 Modal 標題
+            document.querySelector('#addNavigationModal .modal-title').textContent = '新增導航項目';
+            
+            // 顯示 Modal
+            new bootstrap.Modal(document.getElementById('addNavigationModal')).show();
+        }
+        
+        // 重置表單
+        function resetForm() {
+            document.getElementById('navigationForm').reset();
+            document.getElementById('navigationId').value = '';
+        }
+        
+        function editNavigationItem(id) {
+            // 載入數據到表單
+            fetch(`/admin/navigation/${id}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok: ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Received data:', data);  // 用於調試
+                    
+                    // 清除表單
+                    document.getElementById('navigationForm').reset();
+                    
+                    // 填充表單數據
+                    document.getElementById('navigationId').value = data.id;
+                    document.getElementById('title').value = data.title;
+                    document.getElementById('url').value = data.url;
+                    document.getElementById('openInNewTab').checked = data.openInNewTab;
+                    document.getElementById('sortOrder').value = data.sortOrder || 0;
+                    document.getElementById('parentId').value = data.parent ? data.parent.id : '';
+                    document.getElementById('isActive').checked = data.isActive;
+                    
+                    // 更新 Modal 標題
+                    document.querySelector('#addNavigationModal .modal-title').textContent = '編輯導航項目';
+                    
+                    // 顯示 Modal
+                    new bootstrap.Modal(document.getElementById('addNavigationModal')).show();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('載入數據失敗: ' + error.message);
+                });
+        }
+
+        function saveNavigationItem() {
+            const form = document.getElementById('navigationForm');
+            const data = {
+                id: form.querySelector('#navigationId').value || null,
+                title: form.querySelector('#title').value,
+                url: form.querySelector('#url').value,
+                openInNewTab: form.querySelector('#openInNewTab').checked,
+                sortOrder: parseInt(form.querySelector('#sortOrder').value) || 0,
+                isActive: form.querySelector('#isActive').checked
+            };
+            
+            // 處理父項目
+            const parentId = form.querySelector('#parentId').value;
+            if (parentId) {
+                data.parent = { id: parseInt(parentId) };
+            } else {
+                data.parent = null;
+            }
+            
+            console.log('Sending data:', data);  // 用於調試
+            
+            fetch('/admin/navigation', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.text())
+            .then(result => {
+                console.log('Server response:', result);  // 用於調試
+                if (result === 'success') {
+                    location.reload();
+                } else {
+                    alert('保存失敗: ' + result);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('保存失敗: ' + error.message);
+            });
+        }
+
+        function deleteNavigationItem(id) {
+            if (confirm('確定要刪除這個導航項目嗎？')) {
+                fetch(`/admin/navigation/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Accept': 'text/plain'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok: ' + response.status);
+                    }
+                    return response.text();
+                })
+                .then(result => {
+                    console.log('Delete response:', result);
+                    if (result === 'success') {
+                        location.reload();
+                    } else {
+                        alert('刪除失敗: ' + result);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('刪除失敗: ' + error.message);
+                });
+            }
+        }
+    </script>
+</body>
+</html>

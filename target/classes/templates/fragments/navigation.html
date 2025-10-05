@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <!-- Navigation Fragment -->
+    <nav th:fragment="navigation" id="navmenu" class="navmenu">
+        <ul>
+            <li th:each="item : ${navigationItems}">
+                <!-- 如果有子項目 -->
+                <th:block th:if="${not #lists.isEmpty(item.children)}">
+                    <a href="#"><span th:text="${item.title}">項目</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
+                    <ul>
+                        <li th:each="child : ${item.children}" th:class="${not #lists.isEmpty(child.children)} ? 'dropdown'">
+                            <!-- 如果子項目還有子項目 -->
+                            <th:block th:if="${not #lists.isEmpty(child.children)}">
+                                <a href="#"><span th:text="${child.title}">子項目</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
+                                <ul>
+                                    <li th:each="grandchild : ${child.children}">
+                                        <a th:href="${grandchild.url}" 
+                                           th:text="${grandchild.title}"
+                                           th:target="${grandchild.openInNewTab ? '_blank' : '_self'}">孫項目</a>
+                                    </li>
+                                </ul>
+                            </th:block>
+                            <!-- 如果子項目沒有子項目 -->
+                            <th:block th:unless="${not #lists.isEmpty(child.children)}">
+                                <a th:href="${child.url}" 
+                                   th:text="${child.title}"
+                                   th:target="${child.openInNewTab ? '_blank' : '_self'}">子項目</a>
+                            </th:block>
+                        </li>
+                    </ul>
+                </th:block>
+                <!-- 如果沒有子項目 -->
+                <th:block th:unless="${not #lists.isEmpty(item.children)}">
+                    <a th:href="${item.url}" 
+                       th:text="${item.title}"
+                       th:target="${item.openInNewTab ? '_blank' : '_self'}"
+                       th:class="${item.url == '#hero'} ? 'active'">項目</a>
+                </th:block>
+            </li>
+        </ul>
+        <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
+    </nav>
+</body>
+</html>

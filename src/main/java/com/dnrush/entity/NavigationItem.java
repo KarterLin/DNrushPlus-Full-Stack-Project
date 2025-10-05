@@ -1,9 +1,22 @@
 package com.dnrush.entity;
 
-import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "navigation_items")
@@ -11,6 +24,7 @@ public class NavigationItem {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
     
     @Column(name = "title", nullable = false, length = 100)
@@ -18,6 +32,9 @@ public class NavigationItem {
     
     @Column(name = "url", length = 255)
     private String url;
+    
+    @Column(name = "open_in_new_tab", nullable = false, columnDefinition = "boolean default false")
+    private Boolean openInNewTab = false;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
@@ -81,6 +98,14 @@ public class NavigationItem {
     public void setUrl(String url) {
         this.url = url;
     }
+
+    public Boolean getOpenInNewTab() {
+        return openInNewTab;
+    }
+
+    public void setOpenInNewTab(Boolean openInNewTab) {
+        this.openInNewTab = openInNewTab;
+    }
     
     public NavigationItem getParent() {
         return parent;
@@ -128,5 +153,17 @@ public class NavigationItem {
     
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    @Override
+    public String toString() {
+        return "NavigationItem{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", url='" + url + '\'' +
+                ", parent=" + (parent != null ? "NavigationItem(id=" + parent.getId() + ")" : "null") +
+                ", sortOrder=" + sortOrder +
+                ", isActive=" + isActive +
+                '}';
     }
 }

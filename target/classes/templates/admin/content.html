@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-TW" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>網站內容管理 - DN車隊管理後台</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="/assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+    
+    <!-- Custom styles -->
+    <style>
+        .sidebar {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            padding: 48px 0 0;
+            box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+        }
+        
+        .sidebar-sticky {
+            position: relative;
+            top: 0;
+            height: calc(100vh - 48px);
+            padding-top: .5rem;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+        
+        .navbar-brand {
+            padding-top: .75rem;
+            padding-bottom: .75rem;
+        }
+        
+        .navbar .navbar-toggler {
+            top: .25rem;
+            right: 1rem;
+        }
+
+        .content-preview {
+            max-height: 100px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    </style>
+</head>
+<body>
+    <header class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
+        <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3" href="/admin">DN車隊管理後台</a>
+        <button class="navbar-toggler position-absolute d-md-none collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </header>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- 左側導航欄 -->
+            <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin">
+                                <i class="bi bi-house"></i> 儀表板
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/navigation">
+                                <i class="bi bi-list"></i> 導航欄管理
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/admin/content">
+                                <i class="bi bi-file-text"></i> 網站內容
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/images">
+                                <i class="bi bi-image"></i> 圖片管理
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/team">
+                                <i class="bi bi-people"></i> 團隊成員
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/events">
+                                <i class="bi bi-calendar-event"></i> 隊聚活動
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/statistics">
+                                <i class="bi bi-graph-up"></i> 統計數據
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- 主要內容區 -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">網站內容管理</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addContentModal">
+                            <i class="bi bi-plus"></i> 新增內容
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 內容列表 -->
+                <div class="table-responsive">
+                    <table class="table table-striped table-sm">
+                        <thead>
+                            <tr>
+                                <th>標題</th>
+                                <th>Key</th>
+                                <th>內容預覽</th>
+                                <th>類型</th>
+                                <th>最後更新</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="content : ${siteContents}">
+                                <td th:text="${content.title}">Hero標題</td>
+                                <td th:text="${content.contentKey}">hero_title</td>
+                                <td>
+                                    <div class="content-preview" th:text="${content.content}">
+                                        DiviNe Kartrider Team.
+                                    </div>
+                                </td>
+                                <td th:text="${content.contentType}">TEXT</td>
+                                <td th:text="${#temporals.format(content.updatedAt, 'yyyy-MM-dd HH:mm')}">
+                                    2023-10-06 14:30
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary" 
+                                            th:data-id="${content.id}"
+                                            onclick="editContent(this.getAttribute('data-id'))">
+                                        編輯
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" 
+                                            th:data-id="${content.id}"
+                                            onclick="deleteContent(this.getAttribute('data-id'))">
+                                        刪除
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- 新增/編輯內容的Modal -->
+    <div class="modal fade" id="addContentModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">網站內容</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="contentForm">
+                        <input type="hidden" id="contentId" name="id">
+                        <div class="mb-3">
+                            <label for="title" class="form-label">標題</label>
+                            <input type="text" class="form-control" id="title" name="title" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="contentKey" class="form-label">Key</label>
+                            <input type="text" class="form-control" id="contentKey" name="contentKey" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="contentType" class="form-label">類型</label>
+                            <select class="form-select" id="contentType" name="contentType" required>
+                                <option value="TEXT">一般文字</option>
+                                <option value="HTML">HTML</option>
+                                <option value="MARKDOWN">Markdown</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="content" class="form-label">內容</label>
+                            <textarea class="form-control" id="content" name="content" rows="5" required></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="saveContent()">儲存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script>
+        function editContent(id) {
+            // 載入數據到表單
+            fetch(`/api/content/${id}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('contentId').value = data.id;
+                    document.getElementById('title').value = data.title;
+                    document.getElementById('contentKey').value = data.contentKey;
+                    document.getElementById('contentType').value = data.contentType;
+                    document.getElementById('content').value = data.content;
+                    
+                    // 顯示Modal
+                    new bootstrap.Modal(document.getElementById('addContentModal')).show();
+                });
+        }
+
+        function saveContent() {
+            const formData = new FormData(document.getElementById('contentForm'));
+            const data = Object.fromEntries(formData.entries());
+            
+            fetch('/admin/content', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.text())
+            .then(result => {
+                if (result === 'success') {
+                    location.reload();
+                } else {
+                    alert('保存失敗');
+                }
+            });
+        }
+
+        function deleteContent(id) {
+            if (confirm('確定要刪除這個內容嗎？')) {
+                fetch(`/admin/content/${id}`, {
+                    method: 'DELETE'
+                })
+                .then(response => response.text())
+                .then(result => {
+                    if (result === 'success') {
+                        location.reload();
+                    } else {
+                        alert('刪除失敗');
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+</html>

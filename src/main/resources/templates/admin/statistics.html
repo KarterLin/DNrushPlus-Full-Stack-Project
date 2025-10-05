@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="zh-TW" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>統計數據管理 - DN車隊管理後台</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="/assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Custom styles -->
+    <style>
+        .sidebar {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            padding: 48px 0 0;
+            box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+        }
+        
+        .sidebar-sticky {
+            position: relative;
+            top: 0;
+            height: calc(100vh - 48px);
+            padding-top: .5rem;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+        
+        .navbar-brand {
+            padding-top: .75rem;
+            padding-bottom: .75rem;
+        }
+        
+        .navbar .navbar-toggler {
+            top: .25rem;
+            right: 1rem;
+        }
+
+        .stat-card {
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background: white;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #0d6efd;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            margin-bottom: 0;
+        }
+
+        .chart-container {
+            position: relative;
+            margin: auto;
+            height: 300px;
+            margin-bottom: 30px;
+        }
+
+        .icon-large {
+            font-size: 2.5em;
+            color: #0d6efd;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <header class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
+        <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3" href="/admin">DN車隊管理後台</a>
+        <button class="navbar-toggler position-absolute d-md-none collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </header>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- 左側導航欄 -->
+            <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin">
+                                <i class="bi bi-house"></i> 儀表板
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/navigation">
+                                <i class="bi bi-list"></i> 導航欄管理
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/content">
+                                <i class="bi bi-file-text"></i> 網站內容
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/images">
+                                <i class="bi bi-image"></i> 圖片管理
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/team">
+                                <i class="bi bi-people"></i> 團隊成員
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/events">
+                                <i class="bi bi-calendar-event"></i> 隊聚活動
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/admin/statistics">
+                                <i class="bi bi-graph-up"></i> 統計數據
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- 主要內容區 -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">統計數據管理</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <button type="button" class="btn btn-primary" onclick="showAddStatModal()">
+                            <i class="bi bi-plus"></i> 新增統計數據
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 數據總覽 -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="stat-card text-center">
+                            <i class="bi bi-people icon-large"></i>
+                            <div class="stat-value" th:text="${totalMembers}">50</div>
+                            <p class="stat-label">總成員數</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card text-center">
+                            <i class="bi bi-calendar-check icon-large"></i>
+                            <div class="stat-value" th:text="${totalEvents}">120</div>
+                            <p class="stat-label">活動總數</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card text-center">
+                            <i class="bi bi-trophy icon-large"></i>
+                            <div class="stat-value" th:text="${totalAchievements}">35</div>
+                            <p class="stat-label">獲獎數量</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card text-center">
+                            <i class="bi bi-clock-history icon-large"></i>
+                            <div class="stat-value">16</div>
+                            <p class="stat-label">成立年數</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 圖表區域 -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">成員成長趨勢</h5>
+                                <div class="chart-container">
+                                    <canvas id="memberGrowthChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">活動分布</h5>
+                                <div class="chart-container">
+                                    <canvas id="eventDistributionChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 統計數據列表 -->
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title mb-4">統計數據列表</h5>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>名稱</th>
+                                        <th>數值</th>
+                                        <th>單位</th>
+                                        <th>圖標</th>
+                                        <th>顯示順序</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="stat : ${statistics}">
+                                        <td th:text="${stat.label}">成立年數</td>
+                                        <td th:text="${stat.value}">16</td>
+                                        <td th:text="${stat.unit}">年</td>
+                                        <td><i th:class="${stat.iconClass}"></i></td>
+                                        <td th:text="${stat.displayOrder}">1</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary" 
+                                                    th:onclick="'editStat(' + ${stat.id} + ')'">
+                                                編輯
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger" 
+                                                    th:onclick="'deleteStat(' + ${stat.id} + ')'">
+                                                刪除
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- 新增/編輯統計數據Modal -->
+    <div class="modal fade" id="statModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">統計數據</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="statForm">
+                        <input type="hidden" id="statId" name="id">
+                        <div class="mb-3">
+                            <label for="label" class="form-label">名稱</label>
+                            <input type="text" class="form-control" id="label" name="label" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="value" class="form-label">數值</label>
+                            <input type="number" class="form-control" id="value" name="value" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="unit" class="form-label">單位</label>
+                            <input type="text" class="form-control" id="unit" name="unit">
+                        </div>
+                        <div class="mb-3">
+                            <label for="iconClass" class="form-label">圖標類別</label>
+                            <select class="form-select" id="iconClass" name="iconClass" required>
+                                <option value="bi bi-people">人員</option>
+                                <option value="bi bi-calendar-check">活動</option>
+                                <option value="bi bi-trophy">獎盃</option>
+                                <option value="bi bi-clock-history">時間</option>
+                                <option value="bi bi-star">星星</option>
+                                <option value="bi bi-graph-up">趨勢</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="displayOrder" class="form-label">顯示順序</label>
+                            <input type="number" class="form-control" id="displayOrder" name="displayOrder" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="saveStat()">儲存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script>
+        // 初始化圖表
+        document.addEventListener('DOMContentLoaded', function() {
+            // 成員成長趨勢圖
+            const memberGrowthCtx = document.getElementById('memberGrowthChart').getContext('2d');
+            new Chart(memberGrowthCtx, {
+                type: 'line',
+                data: {
+                    labels: ['2020', '2021', '2022', '2023'],
+                    datasets: [{
+                        label: '成員數量',
+                        data: [30, 35, 42, 50],
+                        borderColor: '#0d6efd',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // 活動分布圖
+            const eventDistributionCtx = document.getElementById('eventDistributionChart').getContext('2d');
+            new Chart(eventDistributionCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['線上活動', '線下聚會', '比賽', '其他'],
+                    datasets: [{
+                        data: [30, 40, 20, 10],
+                        backgroundColor: [
+                            '#0d6efd',
+                            '#6610f2',
+                            '#6f42c1',
+                            '#d63384'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        });
+
+        let statModal;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            statModal = new bootstrap.Modal(document.getElementById('statModal'));
+        });
+
+        function showAddStatModal() {
+            document.getElementById('statForm').reset();
+            document.getElementById('statId').value = '';
+            statModal.show();
+        }
+
+        function editStat(id) {
+            fetch(`/api/statistics/${id}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('statId').value = data.id;
+                    document.getElementById('label').value = data.label;
+                    document.getElementById('value').value = data.value;
+                    document.getElementById('unit').value = data.unit;
+                    document.getElementById('iconClass').value = data.iconClass;
+                    document.getElementById('displayOrder').value = data.displayOrder;
+                    
+                    statModal.show();
+                });
+        }
+
+        function saveStat() {
+            const formData = new FormData(document.getElementById('statForm'));
+            const data = Object.fromEntries(formData.entries());
+            
+            fetch('/admin/statistics', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.text())
+            .then(result => {
+                if (result === 'success') {
+                    statModal.hide();
+                    location.reload();
+                } else {
+                    alert('保存失敗');
+                }
+            });
+        }
+
+        function deleteStat(id) {
+            if (confirm('確定要刪除這個統計數據嗎？')) {
+                fetch(`/admin/statistics/${id}`, {
+                    method: 'DELETE'
+                })
+                .then(response => response.text())
+                .then(result => {
+                    if (result === 'success') {
+                        location.reload();
+                    } else {
+                        alert('刪除失敗');
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+</html>

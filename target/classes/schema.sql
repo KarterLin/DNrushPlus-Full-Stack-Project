@@ -1,10 +1,14 @@
--- H2 資料庫不需要建立資料庫語句
+-- 檢查並創建資料庫
+CREATE DATABASE IF NOT EXISTS dnrush_plus CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE dnrush_plus;
 
 -- 導航欄項目表
-CREATE TABLE IF NOT EXISTS navigation_items (
+DROP TABLE IF EXISTS navigation_items;
+CREATE TABLE navigation_items (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(100) NOT NULL COMMENT '導航標題',
     url VARCHAR(255) COMMENT '連結URL',
+    open_in_new_tab BOOLEAN DEFAULT FALSE COMMENT '是否在新分頁開啟',
     parent_id BIGINT COMMENT '父級ID，用於下拉選單',
     sort_order INT DEFAULT 0 COMMENT '排序順序',
     is_active BOOLEAN DEFAULT TRUE COMMENT '是否啟用',

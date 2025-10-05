@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="zh-TW" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>團隊成員管理 - DN車隊管理後台</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="/assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+    
+    <!-- Custom styles -->
+    <style>
+        .sidebar {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            padding: 48px 0 0;
+            box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+        }
+        
+        .sidebar-sticky {
+            position: relative;
+            top: 0;
+            height: calc(100vh - 48px);
+            padding-top: .5rem;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+        
+        .navbar-brand {
+            padding-top: .75rem;
+            padding-bottom: .75rem;
+        }
+        
+        .navbar .navbar-toggler {
+            top: .25rem;
+            right: 1rem;
+        }
+
+        .member-card {
+            margin-bottom: 20px;
+        }
+
+        .member-avatar {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        .social-links a {
+            margin-right: 10px;
+            color: #6c757d;
+        }
+
+        .social-links a:hover {
+            color: #0d6efd;
+        }
+    </style>
+</head>
+<body>
+    <header class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
+        <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3" href="/admin">DN車隊管理後台</a>
+        <button class="navbar-toggler position-absolute d-md-none collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </header>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- 左側導航欄 -->
+            <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin">
+                                <i class="bi bi-house"></i> 儀表板
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/navigation">
+                                <i class="bi bi-list"></i> 導航欄管理
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/content">
+                                <i class="bi bi-file-text"></i> 網站內容
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/images">
+                                <i class="bi bi-image"></i> 圖片管理
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/admin/team">
+                                <i class="bi bi-people"></i> 團隊成員
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/events">
+                                <i class="bi bi-calendar-event"></i> 隊聚活動
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/statistics">
+                                <i class="bi bi-graph-up"></i> 統計數據
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- 主要內容區 -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">團隊成員管理</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <button type="button" class="btn btn-primary" onclick="showAddMemberModal()">
+                            <i class="bi bi-person-plus"></i> 新增成員
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 成員列表 -->
+                <div class="row">
+                    <div th:each="member : ${teamMembers}" class="col-md-4 member-card">
+                        <div class="card">
+                            <img th:src="${member.avatarImage != null ? member.avatarImage.base64Data : '/assets/img/team/default.jpg'}"
+                                 class="member-avatar" th:alt="${member.name}">
+                            <div class="card-body">
+                                <h5 class="card-title" th:text="${member.name}">呆虎(虎哥)</h5>
+                                <p class="card-text" th:text="${member.position}">車隊總負責人</p>
+                                <div class="social-links">
+                                    <a th:if="${member.facebookUrl != null}" th:href="${member.facebookUrl}" target="_blank">
+                                        <i class="bi bi-facebook"></i>
+                                    </a>
+                                    <a th:if="${member.instagramUrl != null}" th:href="${member.instagramUrl}" target="_blank">
+                                        <i class="bi bi-instagram"></i>
+                                    </a>
+                                    <a th:if="${member.youtubeUrl != null}" th:href="${member.youtubeUrl}" target="_blank">
+                                        <i class="bi bi-youtube"></i>
+                                    </a>
+                                    <a th:if="${member.githubUrl != null}" th:href="${member.githubUrl}" target="_blank">
+                                        <i class="bi bi-github"></i>
+                                    </a>
+                                </div>
+                                <div class="mt-3">
+                                    <button class="btn btn-sm btn-outline-primary" 
+                                            th:onclick="'editMember(' + ${member.id} + ')'">
+                                        編輯
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" 
+                                            th:onclick="'deleteMember(' + ${member.id} + ')'">
+                                        刪除
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- 新增/編輯成員的Modal -->
+    <div class="modal fade" id="memberModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">團隊成員</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="memberForm">
+                        <input type="hidden" id="memberId" name="id">
+                        <div class="mb-3">
+                            <label for="memberName" class="form-label">姓名/暱稱</label>
+                            <input type="text" class="form-control" id="memberName" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="memberPosition" class="form-label">職位</label>
+                            <input type="text" class="form-control" id="memberPosition" name="position" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="memberAvatar" class="form-label">頭像</label>
+                            <input type="file" class="form-control" id="memberAvatar" name="avatar" accept="image/*">
+                        </div>
+                        <div class="mb-3">
+                            <label for="facebookUrl" class="form-label">Facebook連結</label>
+                            <input type="url" class="form-control" id="facebookUrl" name="facebookUrl">
+                        </div>
+                        <div class="mb-3">
+                            <label for="instagramUrl" class="form-label">Instagram連結</label>
+                            <input type="url" class="form-control" id="instagramUrl" name="instagramUrl">
+                        </div>
+                        <div class="mb-3">
+                            <label for="youtubeUrl" class="form-label">YouTube連結</label>
+                            <input type="url" class="form-control" id="youtubeUrl" name="youtubeUrl">
+                        </div>
+                        <div class="mb-3">
+                            <label for="githubUrl" class="form-label">GitHub連結</label>
+                            <input type="url" class="form-control" id="githubUrl" name="githubUrl">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="saveMember()">儲存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script>
+        let memberModal;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            memberModal = new bootstrap.Modal(document.getElementById('memberModal'));
+        });
+
+        function showAddMemberModal() {
+            // 清空表單
+            document.getElementById('memberForm').reset();
+            document.getElementById('memberId').value = '';
+            memberModal.show();
+        }
+
+        function editMember(id) {
+            // 載入成員數據
+            fetch(`/api/team/${id}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('memberId').value = data.id;
+                    document.getElementById('memberName').value = data.name;
+                    document.getElementById('memberPosition').value = data.position;
+                    document.getElementById('facebookUrl').value = data.facebookUrl || '';
+                    document.getElementById('instagramUrl').value = data.instagramUrl || '';
+                    document.getElementById('youtubeUrl').value = data.youtubeUrl || '';
+                    document.getElementById('githubUrl').value = data.githubUrl || '';
+                    
+                    memberModal.show();
+                });
+        }
+
+        function saveMember() {
+            const formData = new FormData(document.getElementById('memberForm'));
+            
+            fetch('/admin/team', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(result => {
+                if (result === 'success') {
+                    memberModal.hide();
+                    location.reload();
+                } else {
+                    alert('保存失敗');
+                }
+            });
+        }
+
+        function deleteMember(id) {
+            if (confirm('確定要刪除這位成員嗎？')) {
+                fetch(`/admin/team/${id}`, {
+                    method: 'DELETE'
+                })
+                .then(response => response.text())
+                .then(result => {
+                    if (result === 'success') {
+                        location.reload();
+                    } else {
+                        alert('刪除失敗');
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+</html>

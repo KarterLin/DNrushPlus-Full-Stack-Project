@@ -1,14 +1,24 @@
 package com.dnrush.controller;
 
-import com.dnrush.entity.*;
-import com.dnrush.service.*;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import java.util.List;
+import com.dnrush.entity.EventPhoto;
+import com.dnrush.entity.ImageResource;
+import com.dnrush.entity.NavigationItem;
+import com.dnrush.entity.Statistic;
+import com.dnrush.entity.TeamMember;
+import com.dnrush.service.EventPhotoService;
+import com.dnrush.service.ImageService;
+import com.dnrush.service.NavigationService;
+import com.dnrush.service.SiteContentService;
+import com.dnrush.service.StatisticService;
+import com.dnrush.service.TeamMemberService;
 
 @Controller
 @RequestMapping("/")
@@ -34,8 +44,20 @@ public class HomeController {
     
     @GetMapping
     public String index(Model model) {
-        // 導航欄資料
+        // 導航欄資料（包含子項目）
         List<NavigationItem> navigationItems = navigationService.getActiveRootItems();
+        // 對每個根項目，加載其子項目
+        for (NavigationItem item : navigationItems) {
+            if (item.getChildren() != null && !item.getChildren().isEmpty()) {
+                List<NavigationItem> children = navigationService.getActiveChildrenByParentId(item.getId());
+                // 對每個子項目，加載其子項目
+                for (NavigationItem child : children) {
+                    List<NavigationItem> grandchildren = navigationService.getActiveChildrenByParentId(child.getId());
+                    child.setChildren(grandchildren);
+                }
+                item.setChildren(children);
+            }
+        }
         model.addAttribute("navigationItems", navigationItems);
         
         // Hero區塊內容

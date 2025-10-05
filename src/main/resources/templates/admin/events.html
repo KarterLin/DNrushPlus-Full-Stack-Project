@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="zh-TW" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>隊聚活動管理 - DN車隊管理後台</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="/assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+    
+    <!-- Dropzone CSS -->
+    <link href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" rel="stylesheet" type="text/css" />
+    
+    <!-- Custom styles -->
+    <style>
+        .sidebar {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            padding: 48px 0 0;
+            box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+        }
+        
+        .sidebar-sticky {
+            position: relative;
+            top: 0;
+            height: calc(100vh - 48px);
+            padding-top: .5rem;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+        
+        .navbar-brand {
+            padding-top: .75rem;
+            padding-bottom: .75rem;
+        }
+        
+        .navbar .navbar-toggler {
+            top: .25rem;
+            right: 1rem;
+        }
+
+        .photo-card {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .photo-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+
+        .photo-actions {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: none;
+        }
+
+        .photo-card:hover .photo-actions {
+            display: block;
+        }
+
+        .photo-info {
+            padding: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            border-bottom-left-radius: 5px;
+            border-bottom-right-radius: 5px;
+        }
+
+        .dropzone {
+            border: 2px dashed #0d6efd;
+            border-radius: 5px;
+            background: white;
+            min-height: 150px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .dropzone .dz-message {
+            margin: 2em 0;
+        }
+
+        .year-divider {
+            margin: 30px 0;
+            border-bottom: 2px solid #dee2e6;
+            position: relative;
+        }
+
+        .year-label {
+            position: absolute;
+            top: -15px;
+            left: 20px;
+            background: white;
+            padding: 5px 15px;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <header class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
+        <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3" href="/admin">DN車隊管理後台</a>
+        <button class="navbar-toggler position-absolute d-md-none collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </header>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- 左側導航欄 -->
+            <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin">
+                                <i class="bi bi-house"></i> 儀表板
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/navigation">
+                                <i class="bi bi-list"></i> 導航欄管理
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/content">
+                                <i class="bi bi-file-text"></i> 網站內容
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/images">
+                                <i class="bi bi-image"></i> 圖片管理
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/team">
+                                <i class="bi bi-people"></i> 團隊成員
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/admin/events">
+                                <i class="bi bi-calendar-event"></i> 隊聚活動
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/statistics">
+                                <i class="bi bi-graph-up"></i> 統計數據
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- 主要內容區 -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">隊聚活動照片管理</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                            <i class="bi bi-upload"></i> 上傳照片
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 年份篩選 -->
+                <div class="mb-4">
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-primary active" data-filter="all">全部</button>
+                        <button th:each="year : ${activeYears}" 
+                                type="button" 
+                                class="btn btn-outline-primary" 
+                                th:data-filter="${year}"
+                                th:text="${year} + '年'">
+                            2023年
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 照片列表（按年份分組） -->
+                <div th:each="year : ${activeYears}" class="year-section">
+                    <div class="year-divider">
+                        <span class="year-label" th:text="${year} + '年'">2023年</span>
+                    </div>
+                    <div class="row" th:attr="data-year=${year}">
+                        <div th:each="photo : ${eventPhotos}" 
+                             th:if="${photo.eventYear == year}"
+                             class="col-md-4 photo-card">
+                            <img th:src="${photo.image.base64Data}" class="img-fluid" th:alt="${photo.title}">
+                            <div class="photo-info">
+                                <h5 class="mb-1" th:text="${photo.title}">2023宜蘭隊聚</h5>
+                                <p class="mb-0" th:text="${photo.description}">活動描述</p>
+                            </div>
+                            <div class="photo-actions">
+                                <button class="btn btn-sm btn-light" 
+                                        th:onclick="'editPhoto(' + ${photo.id} + ')'">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger" 
+                                        th:onclick="'deletePhoto(' + ${photo.id} + ')'">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- 上傳照片Modal -->
+    <div class="modal fade" id="uploadModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">上傳活動照片</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="uploadForm">
+                        <div class="mb-3">
+                            <label for="eventYear" class="form-label">年份</label>
+                            <select class="form-select" id="eventYear" name="eventYear" required>
+                                <option value="">選擇年份</option>
+                                <option th:each="year : ${#numbers.sequence(2020, #dates.year(#dates.createNow()))}"
+                                        th:value="${year}" 
+                                        th:text="${year} + '年'">
+                                    2023年
+                                </option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="eventTitle" class="form-label">活動標題</label>
+                            <input type="text" class="form-control" id="eventTitle" name="title" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="eventDescription" class="form-label">活動描述</label>
+                            <textarea class="form-control" id="eventDescription" name="description" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">照片上傳</label>
+                            <div id="dropzone" class="dropzone"></div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="submitUpload()">上傳</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 編輯照片Modal -->
+    <div class="modal fade" id="editModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">編輯照片資訊</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editForm">
+                        <input type="hidden" id="editPhotoId" name="id">
+                        <div class="mb-3">
+                            <label for="editEventYear" class="form-label">年份</label>
+                            <select class="form-select" id="editEventYear" name="eventYear" required>
+                                <option th:each="year : ${#numbers.sequence(2020, #dates.year(#dates.createNow()))}"
+                                        th:value="${year}" 
+                                        th:text="${year} + '年'">
+                                    2023年
+                                </option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editEventTitle" class="form-label">活動標題</label>
+                            <input type="text" class="form-control" id="editEventTitle" name="title" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editEventDescription" class="form-label">活動描述</label>
+                            <textarea class="form-control" id="editEventDescription" name="description" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="submitEdit()">儲存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <!-- Dropzone JS -->
+    <script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script>
+        Dropzone.autoDiscover = false;
+        
+        let myDropzone;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化Dropzone
+            myDropzone = new Dropzone("#dropzone", {
+                url: "/admin/events/upload",
+                autoProcessQueue: false,
+                addRemoveLinks: true,
+                parallelUploads: 10,
+                maxFiles: 10,
+                acceptedFiles: "image/*",
+                dictDefaultMessage: "拖放照片到此處或點擊上傳<br>（最多10張）"
+            });
+
+            // 年份篩選功能
+            document.querySelectorAll('[data-filter]').forEach(button => {
+                button.addEventListener('click', function() {
+                    const filter = this.dataset.filter;
+                    
+                    // 更新按鈕狀態
+                    document.querySelectorAll('[data-filter]').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                    
+                    // 顯示/隱藏年份區塊
+                    document.querySelectorAll('.year-section').forEach(section => {
+                        if (filter === 'all' || section.querySelector(`[data-year="${filter}"]`)) {
+                            section.style.display = 'block';
+                        } else {
+                            section.style.display = 'none';
+                        }
+                    });
+                });
+            });
+        });
+
+        function submitUpload() {
+            const formData = new FormData(document.getElementById('uploadForm'));
+            
+            myDropzone.files.forEach((file, index) => {
+                formData.append(`photos[${index}]`, file);
+            });
+
+            fetch('/admin/events', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(result => {
+                if (result === 'success') {
+                    location.reload();
+                } else {
+                    alert('上傳失敗');
+                }
+            });
+        }
+
+        function editPhoto(id) {
+            fetch(`/api/events/${id}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('editPhotoId').value = data.id;
+                    document.getElementById('editEventYear').value = data.eventYear;
+                    document.getElementById('editEventTitle').value = data.title;
+                    document.getElementById('editEventDescription').value = data.description;
+                    
+                    new bootstrap.Modal(document.getElementById('editModal')).show();
+                });
+        }
+
+        function submitEdit() {
+            const formData = new FormData(document.getElementById('editForm'));
+            
+            fetch('/admin/events/update', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(result => {
+                if (result === 'success') {
+                    location.reload();
+                } else {
+                    alert('保存失敗');
+                }
+            });
+        }
+
+        function deletePhoto(id) {
+            if (confirm('確定要刪除這張照片嗎？')) {
+                fetch(`/admin/events/${id}`, {
+                    method: 'DELETE'
+                })
+                .then(response => response.text())
+                .then(result => {
+                    if (result === 'success') {
+                        location.reload();
+                    } else {
+                        alert('刪除失敗');
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+</html>
