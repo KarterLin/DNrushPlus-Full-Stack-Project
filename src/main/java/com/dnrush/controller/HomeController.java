@@ -44,20 +44,8 @@ public class HomeController {
     
     @GetMapping
     public String index(Model model) {
-        // 導航欄資料（包含子項目）
+        // 導航欄資料
         List<NavigationItem> navigationItems = navigationService.getActiveRootItems();
-        // 對每個根項目，加載其子項目
-        for (NavigationItem item : navigationItems) {
-            if (item.getChildren() != null && !item.getChildren().isEmpty()) {
-                List<NavigationItem> children = navigationService.getActiveChildrenByParentId(item.getId());
-                // 對每個子項目，加載其子項目
-                for (NavigationItem child : children) {
-                    List<NavigationItem> grandchildren = navigationService.getActiveChildrenByParentId(child.getId());
-                    child.setChildren(grandchildren);
-                }
-                item.setChildren(children);
-            }
-        }
         model.addAttribute("navigationItems", navigationItems);
         
         // Hero區塊內容

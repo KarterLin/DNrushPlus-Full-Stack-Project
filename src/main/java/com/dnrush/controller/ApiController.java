@@ -1,14 +1,28 @@
 package com.dnrush.controller;
 
-import com.dnrush.entity.*;
-import com.dnrush.service.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.dnrush.entity.EventPhoto;
+import com.dnrush.entity.ImageResource;
+import com.dnrush.entity.NavigationItem;
+import com.dnrush.entity.SiteContent;
+import com.dnrush.entity.Statistic;
+import com.dnrush.entity.TeamMember;
+import com.dnrush.service.EventPhotoService;
+import com.dnrush.service.ImageService;
+import com.dnrush.service.NavigationService;
+import com.dnrush.service.SiteContentService;
+import com.dnrush.service.StatisticService;
+import com.dnrush.service.TeamMemberService;
 
 @RestController
 @RequestMapping("/api")
@@ -37,12 +51,6 @@ public class ApiController {
     public ResponseEntity<List<NavigationItem>> getNavigation() {
         List<NavigationItem> navigationItems = navigationService.getActiveRootItems();
         return ResponseEntity.ok(navigationItems);
-    }
-    
-    @GetMapping("/navigation/{parentId}/children")
-    public ResponseEntity<List<NavigationItem>> getNavigationChildren(@PathVariable Long parentId) {
-        List<NavigationItem> children = navigationService.getActiveChildrenByParentId(parentId);
-        return ResponseEntity.ok(children);
     }
     
     // 網站內容API
@@ -140,7 +148,7 @@ public class ApiController {
         Map<String, Object> websiteData = new HashMap<>();
         
         // 導航欄
-        websiteData.put("navigation", navigationService.getActiveRootItems());
+        websiteData.put("navigationItems", navigationService.getAllActiveItems());
         
         // 網站內容
         websiteData.put("content", siteContentService.getAllActiveContent());

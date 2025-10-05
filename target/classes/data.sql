@@ -1,30 +1,13 @@
 -- 初始化導航欄資料
-INSERT INTO navigation_items (title, url, parent_id, sort_order, is_active, open_in_new_tab) VALUES
-('首頁', '#hero', NULL, 1, TRUE, FALSE),
-('車隊介紹', '#about', NULL, 2, TRUE, FALSE),
-('隊史館', '#services', NULL, 3, TRUE, FALSE),
-('隊聚活動', '#portfolio', NULL, 4, TRUE, FALSE),
-('Team', '#team', NULL, 5, TRUE, FALSE),
-('隊規、入隊標準', '#rules', NULL, 6, TRUE, FALSE),
-('實用連結', '#', NULL, 7, TRUE, FALSE),
-('入隊申請', '#contact', NULL, 8, TRUE, FALSE);
+INSERT INTO navigation_items (title, url, sort_order, is_active, open_in_new_tab) VALUES
+('首頁', '#hero', 1, TRUE, FALSE),
+('車隊介紹', '#about', 2, TRUE, FALSE),
+('隊史館', '#services', 3, TRUE, FALSE),
+('隊聚活動', '#portfolio', 4, TRUE, FALSE),
+('Team', '#team', 5, TRUE, FALSE),
+('隊規、入隊標準', '#rules', 6, TRUE, FALSE),
+('入隊申請', '#contact', 7, TRUE, FALSE);
 
--- 實用連結子選單
-INSERT INTO navigation_items (title, url, parent_id, sort_order, is_active, open_in_new_tab) VALUES
-('跑跑卡丁車Rush Plus相關工具', '#', 7, 1, TRUE, FALSE),
-('巴哈姆特論壇', '#', 7, 2, TRUE, FALSE),
-('DiviNe車隊 FB官方粉絲團', 'https://www.facebook.com/p/-DN--100063646887032/', 7, 3, TRUE, TRUE),
-('跑跑卡丁車Rush Plus官方粉絲團', 'https://www.facebook.com/KartRushTW/?locale=zh_TW', 7, 4, TRUE, TRUE);
-
--- 跑跑卡丁車Rush Plus相關工具子選單
-INSERT INTO navigation_items (title, url, parent_id, sort_order, is_active, open_in_new_tab) VALUES
-('競速測試線級工具', 'https://rush-corner.vercel.app/', 9, 1, TRUE, TRUE),
-('台服S27分線表', '#', 9, 2, TRUE, FALSE);
-
--- 巴哈姆特論壇子選單
-INSERT INTO navigation_items (title, url, parent_id, sort_order, is_active, open_in_new_tab) VALUES
-('跑跑卡丁車RUSH+ 哈啦板', 'https://forum.gamer.com.tw/B.php?bsn=36872', 10, 1, TRUE, TRUE),
-('跑跑卡丁車 哈啦板', 'https://forum.gamer.com.tw/B.php?bsn=08936', 10, 2, TRUE, TRUE);
 
 -- 初始化網站內容
 INSERT INTO site_contents (content_key, title, content, content_type, section, sort_order, is_active) VALUES

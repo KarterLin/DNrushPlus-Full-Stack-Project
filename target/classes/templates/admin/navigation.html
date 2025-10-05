@@ -99,7 +99,7 @@
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                     <h1 class="h2">導航欄管理</h1>
                     <div class="btn-toolbar mb-2 mb-md-0">
-                        <button type="button" class="btn btn-primary" onclick="showAddNavigationModal()">
+                        <button type="button" class="btn btn-primary me-2" onclick="showAddNavigationModal()">
                             <i class="bi bi-plus"></i> 新增導航項目
                         </button>
                     </div>
@@ -113,32 +113,35 @@
                                 <th>標題</th>
                                 <th>URL</th>
                                 <th>排序</th>
-                                <th>父項目</th>
+                                <th>在新分頁開啟</th>
                                 <th>狀態</th>
                                 <th>操作</th>
                             </tr>
                         </thead>
                         <tbody>
+                            <!-- 遍歷導航項目 -->
                             <tr th:each="item : ${navigationItems}">
-                                <td th:text="${item.title}">首頁</td>
+                                <td>
+                                    <span th:text="${item.title}">項目標題</span>
+                                </td>
                                 <td>
                                     <span th:text="${item.url}"></span>
-                                    <i class="bi bi-box-arrow-up-right" th:if="${item.openInNewTab}" title="在新分頁開啟"></i>
                                 </td>
-                                <td th:text="${item.sortOrder}">1</td>
-                                <td th:text="${item.parent != null ? item.parent.title : '-'}">-</td>
+                                <td th:text="${item.sortOrder}">0</td>
+                                <td>
+                                    <span th:if="${item.openInNewTab}" class="badge bg-success">啟用</span>
+                                    <span th:unless="${item.openInNewTab}" class="badge bg-danger">停用</span>
+                                </td>
                                 <td>
                                     <span th:if="${item.isActive}" class="badge bg-success">啟用</span>
                                     <span th:unless="${item.isActive}" class="badge bg-danger">停用</span>
                                 </td>
                                 <td>
                                     <button class="btn btn-sm btn-outline-primary" 
-                                            th:data-id="${item.id}"
                                             th:onclick="'editNavigationItem(' + ${item.id} + ')'">
                                         編輯
                                     </button>
                                     <button class="btn btn-sm btn-outline-danger" 
-                                            th:data-id="${item.id}"
                                             th:onclick="'deleteNavigationItem(' + ${item.id} + ')'">
                                         刪除
                                     </button>
@@ -178,17 +181,6 @@
                             <label for="sortOrder" class="form-label">排序</label>
                             <input type="number" class="form-control" id="sortOrder" name="sortOrder" required>
                         </div>
-                        <div class="mb-3">
-                            <label for="parentId" class="form-label">父項目</label>
-                            <select class="form-select" id="parentId" name="parentId">
-                                <option value="">無</option>
-                                <option th:each="item : ${activeItems}"
-                                        th:if="${item.parent == null}"
-                                        th:value="${item.id}"
-                                        th:text="${item.title}">
-                                </option>
-                            </select>
-                        </div>
                         <div class="mb-3 form-check">
                             <input type="checkbox" class="form-check-input" id="isActive" name="isActive" checked>
                             <label class="form-check-label" for="isActive">啟用</label>
@@ -217,8 +209,12 @@
             // 更新 Modal 標題
             document.querySelector('#addNavigationModal .modal-title').textContent = '新增導航項目';
             
+            // 設置預設排序值
+            document.getElementById('sortOrder').value = '0';
+            
             // 顯示 Modal
-            new bootstrap.Modal(document.getElementById('addNavigationModal')).show();
+            const modal = new bootstrap.Modal(document.getElementById('addNavigationModal'));
+            modal.show();
         }
         
         // 重置表單
@@ -232,7 +228,9 @@
             fetch(`/admin/navigation/${id}`)
                 .then(response => {
                     if (!response.ok) {
-                        throw new Error('Network response was not ok: ' + response.status);
+                        return response.json().then(data => {
+                            throw new Error(data.message || '載入數據失敗');
+                        });
                     }
                     return response.json();
                 })
@@ -245,10 +243,9 @@
                     // 填充表單數據
                     document.getElementById('navigationId').value = data.id;
                     document.getElementById('title').value = data.title;
-                    document.getElementById('url').value = data.url;
-                    document.getElementById('openInNewTab').checked = data.openInNewTab;
+                    document.getElementById('url').value = data.url || '';
+                    document.getElementById('openInNewTab').checked = data.openInNewTab || false;
                     document.getElementById('sortOrder').value = data.sortOrder || 0;
-                    document.getElementById('parentId').value = data.parent ? data.parent.id : '';
                     document.getElementById('isActive').checked = data.isActive;
                     
                     // 更新 Modal 標題
@@ -274,14 +271,6 @@
                 isActive: form.querySelector('#isActive').checked
             };
             
-            // 處理父項目
-            const parentId = form.querySelector('#parentId').value;
-            if (parentId) {
-                data.parent = { id: parseInt(parentId) };
-            } else {
-                data.parent = null;
-            }
-            
             console.log('Sending data:', data);  // 用於調試
             
             fetch('/admin/navigation', {
@@ -292,13 +281,25 @@
                 },
                 body: JSON.stringify(data)
             })
-            .then(response => response.text())
-            .then(result => {
-                console.log('Server response:', result);  // 用於調試
-                if (result === 'success') {
+            .then(response => {
+                console.log('Server response:', response);  // 用於調試
+                if (!response.ok) {
+                    return response.json().then(data => {
+                        if (response.status === 400) {
+                            throw new Error(data.message || '請檢查輸入資料');
+                        } else {
+                            throw new Error(data.message || '伺服器錯誤');
+                        }
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Response data:', data);
+                if (data.success) {
                     location.reload();
                 } else {
-                    alert('保存失敗: ' + result);
+                    throw new Error(data.message || '未知錯誤');
                 }
             })
             .catch(error => {
@@ -312,21 +313,25 @@
                 fetch(`/admin/navigation/${id}`, {
                     method: 'DELETE',
                     headers: {
-                        'Accept': 'text/plain'
+                        'Accept': 'application/json'
                     }
                 })
                 .then(response => {
                     if (!response.ok) {
-                        throw new Error('Network response was not ok: ' + response.status);
+                        if (response.status === 404) {
+                            throw new Error('找不到要刪除的項目');
+                        }
+                        return response.json().then(data => {
+                            throw new Error(data.message || '伺服器錯誤');
+                        });
                     }
-                    return response.text();
+                    return response.json();
                 })
-                .then(result => {
-                    console.log('Delete response:', result);
-                    if (result === 'success') {
+                .then(data => {
+                    if (data.success) {
                         location.reload();
                     } else {
-                        alert('刪除失敗: ' + result);
+                        throw new Error(data.message || '刪除失敗');
                     }
                 })
                 .catch(error => {

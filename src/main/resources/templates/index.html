@@ -40,27 +40,14 @@
       </a>
 
       <nav id="navmenu" class="navmenu">
+        <link rel="stylesheet" href="/assets/css/navbar.css">
         <ul>
-          <li th:each="item : ${navigationItems}" th:if="${item.parent == null}">
-            <a th:href="${item.url}" th:text="${item.title}" 
-               th:class="${item.url == '#hero'} ? 'active' : ''"
-               th:target="${item.openInNewTab ? '_blank' : '_self'}"></a>
-            
-            <!-- 子選單 -->
-            <ul th:if="${item.children != null and !item.children.isEmpty()}">
-              <li th:each="child : ${item.children}">
-                <a th:href="${child.url}" th:text="${child.title}"
-                   th:target="${child.openInNewTab ? '_blank' : '_self'}"></a>
-                
-                <!-- 孫選單 -->
-                <ul th:if="${child.children != null and !child.children.isEmpty()}">
-                  <li th:each="grandchild : ${child.children}">
-                    <a th:href="${grandchild.url}" th:text="${grandchild.title}"
-                       th:target="${grandchild.openInNewTab ? '_blank' : '_self'}"></a>
-                  </li>
-                </ul>
-              </li>
-            </ul>
+          <li th:each="item : ${navigationItems}">
+            <a th:href="${item.url}" 
+               th:class="${item.url == '#hero' ? 'active' : ''}"
+               th:target="${item.openInNewTab ? '_blank' : '_self'}">
+               <span th:text="${item.title}"></span>
+            </a>
           </li>
         </ul>
         <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>

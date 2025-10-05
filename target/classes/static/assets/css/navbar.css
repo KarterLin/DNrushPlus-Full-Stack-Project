@@ -1,0 +1,116 @@
+/* 主導航欄樣式 */
+.navmenu ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+}
+
+.navmenu > ul > li {
+    position: relative;
+    padding: 10px 0;
+}
+
+.navmenu a {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    font-family: var(--nav-font);
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--nav-color);
+    white-space: nowrap;
+    transition: 0.3s;
+    text-decoration: none;
+}
+
+/* 下拉選單樣式 */
+.navmenu ul ul {
+    position: absolute;
+    display: none;
+    top: 100%;
+    left: 0;
+    z-index: 99;
+    opacity: 0;
+    visibility: hidden;
+    background: var(--nav-dropdown-background-color);
+    padding: 10px 0;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
+    transition: 0.3s;
+    border-radius: 4px;
+    min-width: 200px;
+}
+
+/* Hover 效果 */
+.navmenu li:hover > ul {
+    opacity: 1;
+    visibility: visible;
+    display: block;
+}
+
+.navmenu ul ul a {
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--nav-dropdown-color);
+}
+
+.navmenu ul ul a:hover {
+    color: var(--nav-dropdown-hover-color);
+    background: rgba(var(--accent-color-rgb), 0.1);
+}
+
+/* 下拉指示器 */
+.navmenu .dropdown > a:after {
+    content: "\\25BE";
+    margin-left: 5px;
+    font-size: 12px;
+    line-height: 0;
+    transition: transform 0.3s;
+}
+
+.navmenu .dropdown:hover > a:after {
+    transform: rotate(180deg);
+}
+
+/* 活動項目樣式 */
+.navmenu .active,
+.navmenu a:hover {
+    color: var(--nav-hover-color);
+}
+
+/* 多層下拉選單 */
+.navmenu ul ul ul {
+    left: 100%;
+    top: 0;
+}
+
+/* 移動設備適配 */
+@media (max-width: 1199px) {
+    .navmenu ul {
+        display: none;
+        position: fixed;
+        inset: 55px 15px 15px;
+        padding: 10px 0;
+        margin: 0;
+        border-radius: 10px;
+        background-color: var(--nav-mobile-background-color);
+        overflow-y: auto;
+        transition: 0.3s;
+        z-index: 9998;
+    }
+
+    .navmenu ul ul {
+        position: static;
+        display: none;
+        opacity: 1;
+        visibility: visible;
+        background: transparent;
+        box-shadow: none;
+        padding: 0;
+    }
+
+    .navmenu ul ul a {
+        padding-left: 40px;
+    }
+}

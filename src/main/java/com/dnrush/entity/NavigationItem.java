@@ -1,26 +1,27 @@
 package com.dnrush.entity;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
-import jakarta.persistence.CascadeType;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "navigation_items")
-public class NavigationItem {
+public class NavigationItem implements Serializable {
+    
+    private static final long serialVersionUID = 1L;
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,22 +37,17 @@ public class NavigationItem {
     @Column(name = "open_in_new_tab", nullable = false, columnDefinition = "boolean default false")
     private Boolean openInNewTab = false;
     
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parent_id")
-    private NavigationItem parent;
-    
-    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<NavigationItem> children = new ArrayList<>();
-    
     @Column(name = "sort_order")
     private Integer sortOrder = 0;
     
     @Column(name = "is_active")
     private Boolean isActive = true;
     
-    @Column(name = "created_at")
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
     
+    @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
     
@@ -106,22 +102,8 @@ public class NavigationItem {
     public void setOpenInNewTab(Boolean openInNewTab) {
         this.openInNewTab = openInNewTab;
     }
-    
-    public NavigationItem getParent() {
-        return parent;
-    }
-    
-    public void setParent(NavigationItem parent) {
-        this.parent = parent;
-    }
-    
-    public List<NavigationItem> getChildren() {
-        return children;
-    }
-    
-    public void setChildren(List<NavigationItem> children) {
-        this.children = children;
-    }
+
+
     
     public Integer getSortOrder() {
         return sortOrder;
@@ -161,9 +143,20 @@ public class NavigationItem {
                 "id=" + id +
                 ", title='" + title + '\'' +
                 ", url='" + url + '\'' +
-                ", parent=" + (parent != null ? "NavigationItem(id=" + parent.getId() + ")" : "null") +
+                ", openInNewTab=" + openInNewTab +
                 ", sortOrder=" + sortOrder +
                 ", isActive=" + isActive +
                 '}';
+    }
+
+    public Map<String, Object> toMap() {
+        Map<String, Object> map = new HashMap<>();
+        map.put("id", id);
+        map.put("title", title);
+        map.put("url", url);
+        map.put("openInNewTab", openInNewTab);
+        map.put("sortOrder", sortOrder);
+        map.put("isActive", isActive);
+        return map;
     }
 }

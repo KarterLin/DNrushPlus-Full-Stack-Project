@@ -11,16 +11,9 @@ import com.dnrush.entity.NavigationItem;
 @Repository
 public interface NavigationItemRepository extends JpaRepository<NavigationItem, Long> {
     
+    @Query("SELECT n FROM NavigationItem n WHERE n.isActive = true ORDER BY n.sortOrder")
     List<NavigationItem> findByParentIsNullAndIsActiveTrueOrderBySortOrder();
     
-    List<NavigationItem> findByParentIdAndIsActiveTrueOrderBySortOrder(Long parentId);
-    
-    @Query("SELECT n FROM NavigationItem n WHERE n.parent IS NULL AND n.isActive = true ORDER BY n.sortOrder")
-    List<NavigationItem> findActiveRootItems();
-    
-    @Query("SELECT n FROM NavigationItem n WHERE n.parent.id = :parentId AND n.isActive = true ORDER BY n.sortOrder")
-    List<NavigationItem> findActiveChildrenByParentId(Long parentId);
-    
-    @Query("SELECT n FROM NavigationItem n WHERE n.parent IS NULL ORDER BY n.sortOrder")
-    List<NavigationItem> findAllRootItems();
+    @Query("SELECT n FROM NavigationItem n ORDER BY n.sortOrder")
+    List<NavigationItem> findAllOrderBySortOrder();
 }

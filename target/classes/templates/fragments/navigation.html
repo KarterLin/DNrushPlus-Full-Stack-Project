@@ -3,39 +3,30 @@
 <body>
     <!-- Navigation Fragment -->
     <nav th:fragment="navigation" id="navmenu" class="navmenu">
+        <link rel="stylesheet" href="/assets/css/navigation.css">
         <ul>
-            <li th:each="item : ${navigationItems}">
-                <!-- 如果有子項目 -->
-                <th:block th:if="${not #lists.isEmpty(item.children)}">
-                    <a href="#"><span th:text="${item.title}">項目</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
-                    <ul>
-                        <li th:each="child : ${item.children}" th:class="${not #lists.isEmpty(child.children)} ? 'dropdown'">
-                            <!-- 如果子項目還有子項目 -->
-                            <th:block th:if="${not #lists.isEmpty(child.children)}">
-                                <a href="#"><span th:text="${child.title}">子項目</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
-                                <ul>
-                                    <li th:each="grandchild : ${child.children}">
-                                        <a th:href="${grandchild.url}" 
-                                           th:text="${grandchild.title}"
-                                           th:target="${grandchild.openInNewTab ? '_blank' : '_self'}">孫項目</a>
-                                    </li>
-                                </ul>
-                            </th:block>
-                            <!-- 如果子項目沒有子項目 -->
-                            <th:block th:unless="${not #lists.isEmpty(child.children)}">
-                                <a th:href="${child.url}" 
-                                   th:text="${child.title}"
-                                   th:target="${child.openInNewTab ? '_blank' : '_self'}">子項目</a>
-                            </th:block>
+            <li th:each="item : ${navigationItems}" 
+                th:class="${item.isDropdownMenu ? 'dropdown' : ''}">
+                <!-- 如果是下拉式選單 -->
+                <th:block th:if="${item.isDropdownMenu}">
+                    <a href="#" class="nav-link dropdown-toggle">
+                        <span th:text="${item.title}">項目</span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li th:each="child : ${item.children}">
+                            <a th:href="${child.url}" 
+                               th:text="${child.title}"
+                               th:target="${child.openInNewTab ? '_blank' : '_self'}"
+                               class="dropdown-item">子項目</a>
                         </li>
                     </ul>
                 </th:block>
-                <!-- 如果沒有子項目 -->
-                <th:block th:unless="${not #lists.isEmpty(item.children)}">
+                <!-- 如果是普通選單 -->
+                <th:block th:unless="${item.isDropdownMenu}">
                     <a th:href="${item.url}" 
                        th:text="${item.title}"
                        th:target="${item.openInNewTab ? '_blank' : '_self'}"
-                       th:class="${item.url == '#hero'} ? 'active'">項目</a>
+                       th:class="${item.url == '#hero'} ? 'nav-link active' : 'nav-link'">項目</a>
                 </th:block>
             </li>
         </ul>

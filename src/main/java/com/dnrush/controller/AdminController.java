@@ -3,7 +3,10 @@ package com.dnrush.controller;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -34,6 +37,8 @@ import com.dnrush.service.TeamMemberService;
 @RequestMapping("/admin")
 public class AdminController {
     
+    private static final Logger logger = LoggerFactory.getLogger(AdminController.class);
+    
     @Autowired
     private NavigationService navigationService;
     
@@ -62,45 +67,51 @@ public class AdminController {
     @GetMapping("/navigation")
     public String navigationManagement(Model model) {
         try {
-            // 獲取所有導航項目，包括未啟用的
-            List<NavigationItem> navigationItems = navigationService.getAllItems();
-            System.out.println("Retrieved navigation items: " + navigationItems);
-            
-            // 獲取所有啟用的導航項目（用於父項目下拉選單）
-            List<NavigationItem> activeItems = navigationService.getAllActiveItems();
-            
-            model.addAttribute("navigationItems", navigationItems);
-            model.addAttribute("activeItems", activeItems);
+            List<NavigationItem> allItems = navigationService.getAllItems();
+            model.addAttribute("navigationItems", allItems);
             return "admin/navigation";
         } catch (Exception e) {
-            e.printStackTrace();
-            System.err.println("Error in navigationManagement: " + e.getMessage());
+            logger.error("加載導航欄項目時出錯", e);
             model.addAttribute("error", "加載導航欄項目時出錯: " + e.getMessage());
-            return "error";  // 這裡需要創建一個 error.html 模板
+            return "error";
         }
     }
     
     @PostMapping("/navigation")
     @ResponseBody
-    public String saveNavigation(@RequestBody Map<String, Object> requestBody) {
+    public ResponseEntity<Map<String, Object>> saveNavigation(@RequestBody Map<String, Object> requestBody) {
         try {
+            if (requestBody == null) {
+                logger.warn("Received null request body");
+                return ResponseEntity.badRequest()
+                    .body(Map.of("success", false, "message", "Request body is null"));
+            }
+            
             NavigationItem navigationItem = new NavigationItem();
             
             // 解析 ID
-            Object idObj = requestBody.get("id");
-            if (idObj != null && !idObj.toString().equals("undefined") && !idObj.toString().isEmpty()) {
+            String idStr = requestBody.get("id") != null ? requestBody.get("id").toString() : null;
+            if (idStr != null && !idStr.equals("undefined") && !idStr.isEmpty()) {
                 try {
-                    Long id = Long.parseLong(idObj.toString());
+                    long id = Long.parseLong(idStr);
                     if (id != 0) {
                         navigationItem.setId(id);
                     }
                 } catch (NumberFormatException e) {
-                    System.out.println("Invalid ID format: " + idObj);
+                    return ResponseEntity.badRequest()
+                        .body(Map.of("success", false, "message", "無效的ID格式"));
                 }
             }
             
-            // 解析其他字段
-            navigationItem.setTitle((String) requestBody.get("title"));
+            // 解析標題
+            String title = requestBody.get("title") != null ? requestBody.get("title").toString() : null;
+            if (title == null || title.trim().isEmpty()) {
+                return ResponseEntity.badRequest()
+                    .body(Map.of("success", false, "message", "標題不能為空"));
+            }
+            navigationItem.setTitle(title);
+            
+            // 設置 URL
             navigationItem.setUrl((String) requestBody.get("url"));
             
             // 解析 open_in_new_tab
@@ -110,33 +121,12 @@ public class AdminController {
                  openInNewTabObj.toString().equals("on"));
             navigationItem.setOpenInNewTab(openInNewTab);
             
-            // 解析 parent_id
-            Object parentObj = requestBody.get("parent");
-            if (parentObj instanceof Map) {
-                Map<String, Object> parentMap = (Map<String, Object>) parentObj;
-                Object parentId = parentMap.get("id");
-                if (parentId != null && !parentId.toString().equals("undefined") && !parentId.toString().isEmpty()) {
-                    try {
-                        Long pid = Long.parseLong(parentId.toString());
-                        if (pid != 0) {
-                            NavigationItem parent = navigationService.getNavigationItemById(pid);
-                            navigationItem.setParent(parent);
-                        }
-                    } catch (NumberFormatException e) {
-                        System.out.println("Invalid parent ID format: " + parentId);
-                    }
-                }
-            }
-            
             // 解析 sort_order
-            Object sortOrderObj = requestBody.get("sortOrder");
-            if (sortOrderObj != null) {
-                try {
-                    navigationItem.setSortOrder(Integer.parseInt(sortOrderObj.toString()));
-                } catch (NumberFormatException e) {
-                    navigationItem.setSortOrder(0);
-                }
-            } else {
+            String sortOrderStr = requestBody.get("sortOrder") != null ? 
+                requestBody.get("sortOrder").toString() : "0";
+            try {
+                navigationItem.setSortOrder(Integer.parseInt(sortOrderStr));
+            } catch (NumberFormatException e) {
                 navigationItem.setSortOrder(0);
             }
             
@@ -147,48 +137,56 @@ public class AdminController {
                  isActiveObj.toString().equals("on"));
             navigationItem.setIsActive(isActive);
             
-            System.out.println("Processed navigation item: " + navigationItem);
+            logger.debug("Processed navigation item: {}", navigationItem);
             
             // 保存並獲取結果
             NavigationItem savedItem = navigationService.saveNavigationItem(navigationItem);
-            System.out.println("Saved navigation item: " + savedItem);
+            logger.debug("Saved navigation item: {}", savedItem);
             
             if (savedItem != null && savedItem.getId() != null) {
-                return "success";
+                return ResponseEntity.ok(Map.of("success", true, "message", "導航欄項目儲存成功"));
             } else {
-                return "error: Failed to save navigation item";
+                logger.warn("Failed to save navigation item: {}", navigationItem);
+                return ResponseEntity.status(500)
+                    .body(Map.of("success", false, "message", "儲存導航欄項目失敗"));
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            System.err.println("Error saving navigation item: " + e.getMessage());
-            return "error: " + e.getMessage();
+            logger.error("Error saving navigation item", e);
+            return ResponseEntity.status(500)
+                .body(Map.of("success", false, "message", "儲存時發生錯誤: " + e.getMessage()));
         }
     }
     
     @GetMapping("/navigation/{id}")
     @ResponseBody
-    public NavigationItem getNavigation(@PathVariable Long id) {
+    public ResponseEntity<?> getNavigation(@PathVariable Long id) {
         try {
-            System.out.println("Getting navigation item with id: " + id);
-            return navigationService.getNavigationItemById(id);
+            logger.debug("Getting navigation item with id: {}", id);
+            NavigationItem item = navigationService.getNavigationItemById(id);
+            if (item == null) {
+                logger.warn("Navigation item not found with id: {}", id);
+                return ResponseEntity.status(404)
+                    .body(Map.of("success", false, "message", "找不到導航欄項目"));
+            }
+            return ResponseEntity.ok(item.toMap());
         } catch (Exception e) {
-            e.printStackTrace();
-            System.err.println("Error getting navigation item: " + e.getMessage());
-            throw new RuntimeException("無法獲取導航欄項目", e);
+            logger.error("Error getting navigation item with id: {}", id, e);
+            return ResponseEntity.status(500)
+                .body(Map.of("success", false, "message", "載入數據失敗: " + e.getMessage()));
         }
     }
 
     @DeleteMapping("/navigation/{id}")
     @ResponseBody
-    public String deleteNavigation(@PathVariable Long id) {
+    public ResponseEntity<Map<String, Object>> deleteNavigation(@PathVariable Long id) {
         try {
-            System.out.println("Deleting navigation item with id: " + id);
+            logger.debug("Deleting navigation item with id: {}", id);
             navigationService.deleteNavigationItem(id);
-            return "success";
+            return ResponseEntity.ok(Map.of("success", true, "message", "導航欄項目刪除成功"));
         } catch (Exception e) {
-            e.printStackTrace();
-            System.err.println("Error deleting navigation item: " + e.getMessage());
-            return "error: " + e.getMessage();
+            logger.error("Error deleting navigation item with id: {}", id, e);
+            return ResponseEntity.status(500)
+                .body(Map.of("success", false, "message", "刪除時發生錯誤: " + e.getMessage()));
         }
     }
     
