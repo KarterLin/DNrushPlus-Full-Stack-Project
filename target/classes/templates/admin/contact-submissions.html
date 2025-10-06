@@ -2,7 +2,7 @@
 <html lang="zh-TW" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>聯絡表單管理 - DN車隊</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
@@ -108,9 +108,7 @@
                                                     th:data-available-time="${submission.availableTime}"
                                                     th:data-subject="${submission.subject}"
                                                     th:data-message="${submission.message}"
-                                                    th:data-created-at="${#temporals.format(submission.createdAt, 'yyyy-MM-dd HH:mm:ss')}"
-                                                    th:data-ip="${submission.ipAddress}"
-                                                    th:data-user-agent="${submission.userAgent}">
+                                                    th:data-created-at="${#temporals.format(submission.createdAt, 'yyyy-MM-dd HH:mm:ss')}">
                                                 <i class="bi bi-eye"></i> 檢視
                                             </button>
                                             <button th:if="${!submission.isProcessed}" 
@@ -167,19 +165,6 @@
                                 </tr>
                             </table>
                         </div>
-                        <div class="col-md-6">
-                            <h6 class="text-muted">技術資訊</h6>
-                            <table class="table table-borderless">
-                                <tr>
-                                    <td><strong>IP 位址：</strong></td>
-                                    <td id="modal-ip"></td>
-                                </tr>
-                                <tr>
-                                    <td><strong>瀏覽器：</strong></td>
-                                    <td id="modal-user-agent" style="word-break: break-all; font-size: 0.9em;"></td>
-                                </tr>
-                            </table>
-                        </div>
                     </div>
                     <div class="row mt-3">
                         <div class="col-12">
@@ -209,8 +194,6 @@
             const subject = button.getAttribute('data-subject') || '未提供';
             const message = button.getAttribute('data-message') || '無留言';
             const createdAt = button.getAttribute('data-created-at') || '未知';
-            const ip = button.getAttribute('data-ip') || '未知';
-            const userAgent = button.getAttribute('data-user-agent') || '未知';
 
             // 填入模態對話框
             document.getElementById('modal-name').textContent = name;
@@ -219,8 +202,6 @@
             document.getElementById('modal-subject').textContent = subject;
             document.getElementById('modal-message').textContent = message;
             document.getElementById('modal-created-at').textContent = createdAt;
-            document.getElementById('modal-ip').textContent = ip;
-            document.getElementById('modal-user-agent').textContent = userAgent;
 
             // 顯示模態對話框
             const modal = new bootstrap.Modal(document.getElementById('viewModal'));
