@@ -70,6 +70,28 @@
             bottom: 0;
             left: 0;
             right: 0;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .image-card:hover .image-info {
+            opacity: 1;
+        }
+
+        .loading {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        .image-card .card-img-overlay {
+            padding: 0;
+        }
+
+        .image-category-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 2;
         }
     </style>
 </head>
@@ -130,43 +152,199 @@
             <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                     <h1 class="h2">圖片管理</h1>
-                    <div class="btn-toolbar mb-2 mb-md-0">
-                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#uploadImageModal">
-                            <i class="bi bi-upload"></i> 上傳圖片
+                </div>
+
+                <!-- 分類選擇標籤 -->
+                <ul class="nav nav-tabs mb-4" id="categoryTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="hero-tab" data-bs-toggle="tab" data-bs-target="#hero-panel" type="button" role="tab">
+                            <i class="bi bi-image"></i> 首頁橫幅
                         </button>
-                    </div>
-                </div>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="about-tab" data-bs-toggle="tab" data-bs-target="#about-panel" type="button" role="tab">
+                            <i class="bi bi-info-circle"></i> 關於我們
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="event-tab" data-bs-toggle="tab" data-bs-target="#event-panel" type="button" role="tab">
+                            <i class="bi bi-calendar-event"></i> 隊聚活動
+                        </button>
+                    </li>
+                </ul>
 
-                <!-- 分類篩選 -->
-                <div class="mb-4">
-                    <div class="btn-group" role="group">
-                        <button type="button" class="btn btn-outline-primary active" data-filter="all">全部</button>
-                        <button type="button" class="btn btn-outline-primary" data-filter="hero">首頁橫幅</button>
-                        <button type="button" class="btn btn-outline-primary" data-filter="about">關於我們</button>
-                        <button type="button" class="btn btn-outline-primary" data-filter="event">隊聚活動</button>
-                        <button type="button" class="btn btn-outline-primary" data-filter="team">團隊成員</button>
-                    </div>
-                </div>
-
-                <!-- 圖片網格 -->
-                <div class="row">
-                    <div th:each="image : ${images}" class="col-md-4 image-card" th:data-category="${image.category}">
-                        <img th:src="${image.base64Data}" class="img-fluid" th:alt="${image.description}">
-                        <div class="image-info">
-                            <p class="mb-1" th:text="${image.description}">圖片描述</p>
-                            <small th:text="${image.category}">分類</small>
+                <!-- 分類內容面板 -->
+                <div class="tab-content" id="categoryTabContent">
+                    
+                    <!-- 首頁橫幅面板 -->
+                    <div class="tab-pane fade show active" id="hero-panel" role="tabpanel">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0">首頁橫幅 <span class="badge bg-info">限制：1張圖片</span></h5>
+                            <button type="button" class="btn btn-primary btn-sm" onclick="addNewImage('hero')">
+                                <i class="bi bi-upload"></i> 上傳橫幅圖片
+                            </button>
                         </div>
-                        <div class="image-actions">
-                            <button class="btn btn-sm btn-light" 
-                                    th:data-id="${image.id}"
-                                    onclick="editImage(this.getAttribute('data-id'))">
-                                <i class="bi bi-pencil"></i>
+                        <div class="row" id="hero-images">
+                            <div th:each="image : ${images}" th:if="${image.category == 'hero'}" class="col-md-6 image-card">
+                                <div class="card">
+                                    <div class="position-relative">
+                                        <img th:src="${image.base64Data}" class="card-img-top" th:alt="${image.description}" style="height: 200px; object-fit: cover;">
+                                        <div class="card-img-overlay p-2">
+                                            <div class="position-absolute top-0 end-0 p-2">
+                                                <button class="btn btn-sm btn-light me-1" 
+                                                        th:data-id="${image.id}"
+                                                        onclick="editImage(this.getAttribute('data-id'), 'hero')"
+                                                        title="編輯">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-danger" 
+                                                        th:data-id="${image.id}"
+                                                        onclick="deleteImage(this.getAttribute('data-id'))"
+                                                        title="刪除">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="card-text" th:text="${image.description}">圖片描述</p>
+                                        <small class="text-muted" th:text="${image.originalName}">原始檔名</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div th:unless="${images.?[category == 'hero'].size() > 0}" class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> 還沒有首頁橫幅圖片，點擊上方按鈕上傳。
+                        </div>
+                    </div>
+
+                    <!-- 關於我們面板 -->
+                    <div class="tab-pane fade" id="about-panel" role="tabpanel">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0">關於我們</h5>
+                            <button type="button" class="btn btn-primary btn-sm" onclick="addNewImage('about')">
+                                <i class="bi bi-upload"></i> 上傳圖片
                             </button>
-                            <button class="btn btn-sm btn-danger" 
-                                    th:data-id="${image.id}"
-                                    onclick="deleteImage(this.getAttribute('data-id'))">
-                                <i class="bi bi-trash"></i>
+                        </div>
+                        <div class="row" id="about-images">
+                            <div th:each="image : ${images}" th:if="${image.category == 'about'}" class="col-md-4 image-card mb-3">
+                                <div class="card">
+                                    <div class="position-relative">
+                                        <img th:src="${image.base64Data}" class="card-img-top" th:alt="${image.description}" style="height: 200px; object-fit: cover;">
+                                        <div class="card-img-overlay p-2">
+                                            <div class="position-absolute top-0 end-0 p-2">
+                                                <button class="btn btn-sm btn-light me-1" 
+                                                        th:data-id="${image.id}"
+                                                        onclick="editImage(this.getAttribute('data-id'), 'about')"
+                                                        title="編輯">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-danger" 
+                                                        th:data-id="${image.id}"
+                                                        onclick="deleteImage(this.getAttribute('data-id'))"
+                                                        title="刪除">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="card-text" th:text="${image.description}">圖片描述</p>
+                                        <small class="text-muted" th:text="${image.originalName}">原始檔名</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div th:unless="${images.?[category == 'about'].size() > 0}" class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> 還沒有關於我們的圖片，點擊上方按鈕上傳。
+                        </div>
+                    </div>
+
+                    <!-- 隊聚活動面板 -->
+                    <div class="tab-pane fade" id="event-panel" role="tabpanel">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0">隊聚活動照片</h5>
+                            <div>
+                                <button type="button" class="btn btn-success btn-sm me-2" onclick="addNewYear()">
+                                    <i class="bi bi-plus-circle"></i> 新增年份
+                                </button>
+                                <button type="button" class="btn btn-primary btn-sm" onclick="addNewImage('event')">
+                                    <i class="bi bi-upload"></i> 上傳照片
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- 年份篩選 -->
+                        <div class="mb-3" id="yearFilter">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="mb-0">年份篩選</h6>
+                                <div>
+                                    <button type="button" class="btn btn-outline-primary btn-sm me-2" onclick="showYearManagement()">
+                                        <i class="bi bi-gear"></i> 管理年份
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-outline-secondary active" onclick="filterEventsByYear('all')">全部年度</button>
+                                <button th:each="year : ${availableYears}" type="button" class="btn btn-outline-secondary" 
+                                        th:onclick="'filterEventsByYear(' + ${year} + ')'" th:text="${year} + '年'">年份</button>
+                            </div>
+                        </div>
+
+                        <div class="row" id="event-images">
+                            <div th:each="image : ${images}" th:if="${image.category == 'event'}" 
+                                 class="col-md-3 image-card mb-3" th:data-year="${image.year}">
+                                <div class="card">
+                                    <div class="position-relative">
+                                        <img th:src="${image.base64Data}" class="card-img-top" th:alt="${image.description}" style="height: 150px; object-fit: cover;">
+                                        <span class="badge bg-primary position-absolute top-0 start-0 m-2" th:if="${image.year}" th:text="${image.year} + '年'">年份</span>
+                                        <div class="card-img-overlay p-2">
+                                            <div class="position-absolute top-0 end-0 p-2">
+                                                <button class="btn btn-sm btn-light me-1" 
+                                                        th:data-id="${image.id}"
+                                                        onclick="editImage(this.getAttribute('data-id'), 'event')"
+                                                        title="編輯">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-danger" 
+                                                        th:data-id="${image.id}"
+                                                        onclick="deleteImage(this.getAttribute('data-id'))"
+                                                        title="刪除">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card-body p-2">
+                                        <p class="card-text small mb-1" th:text="${image.description}">圖片描述</p>
+                                        <small class="text-muted" th:text="${image.originalName}">原始檔名</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div th:unless="${images.?[category == 'event'].size() > 0}" class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> 還沒有隊聚活動照片，點擊上方按鈕上傳。
+                        </div>
+                        
+                        <!-- 載入更多按鈕 -->
+                        <div th:if="${hasMoreEventImages}" class="text-center mt-3" id="loadMoreSection">
+                            <button type="button" class="btn btn-outline-primary" onclick="loadMoreEventImages()" id="loadMoreBtn">
+                                <i class="bi bi-plus-circle"></i> 載入更多隊聚活動照片
+                                <span class="d-none" id="loadingSpinner">
+                                    <span class="spinner-border spinner-border-sm ms-2" role="status"></span>
+                                </span>
                             </button>
+                            <div class="mt-2">
+                                <small class="text-muted">
+                                    已顯示 <span th:text="${currentEventImageCount}">#</span> / <span th:text="${totalEventImages}">#</span> 張照片
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <div th:if="${loadAll}" class="text-center mt-3">
+                            <a th:href="@{/admin/images}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-up-circle"></i> 收起部分照片
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -185,19 +363,51 @@
                 <div class="modal-body">
                     <form id="imageForm">
                         <input type="hidden" id="imageId" name="id">
+                        <input type="hidden" id="imageCategory" name="category">
+                        
                         <div class="mb-3">
                             <label for="imageFile" class="form-label">選擇圖片</label>
-                            <input type="file" class="form-control" id="imageFile" name="file" accept="image/*">
+                            <input type="file" class="form-control" id="imageFile" name="file" accept="image/*" onchange="previewImage(this)">
+                            <div class="form-text">
+                                <small class="text-muted">
+                                    <i class="bi bi-info-circle"></i> 
+                                    支援格式：JPG, PNG, GIF
+                                    <span id="heroWarning" style="display: none;" class="text-warning">
+                                        <br><i class="bi bi-exclamation-triangle"></i> 首頁橫幅只能有一張圖片，上傳新圖片將替換現有的圖片
+                                    </span>
+                                </small>
+                            </div>
+                            <div class="mt-2">
+                                <img id="imagePreview" src="#" alt="圖片預覽" style="max-width: 200px; max-height: 200px; display: none;" class="img-thumbnail">
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="category" class="form-label">分類</label>
-                            <select class="form-select" id="category" name="category" required>
-                                <option value="hero">首頁橫幅</option>
-                                <option value="about">關於我們</option>
-                                <option value="event">隊聚活動</option>
-                                <option value="team">團隊成員</option>
-                            </select>
+                        
+                        <div class="mb-3" id="yearSelectGroup" style="display: none;">
+                            <label for="yearSelect" class="form-label">選擇年份</label>
+                            <div class="input-group">
+                                <select class="form-select" id="yearSelect">
+                                    <option value="">請選擇年份</option>
+                                    <option th:each="year : ${availableYears}" th:value="${year}" th:text="${year} + '年'">年份</option>
+                                </select>
+                                <button class="btn btn-outline-secondary" type="button" onclick="showAddYearInput()">
+                                    <i class="bi bi-plus"></i> 新增
+                                </button>
+                            </div>
                         </div>
+                        
+                        <div class="mb-3" id="newYearGroup" style="display: none;">
+                            <label for="newYear" class="form-label">新增年份</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="newYear" placeholder="輸入年份 (如: 2024)" min="2000" max="2100">
+                                <button class="btn btn-outline-secondary" type="button" onclick="addYearToSelect()">
+                                    <i class="bi bi-check"></i> 添加
+                                </button>
+                                <button class="btn btn-outline-secondary" type="button" onclick="cancelAddYear()">
+                                    <i class="bi bi-x"></i> 取消
+                                </button>
+                            </div>
+                        </div>
+                        
                         <div class="mb-3">
                             <label for="description" class="form-label">描述</label>
                             <input type="text" class="form-control" id="description" name="description">
@@ -212,79 +422,709 @@
         </div>
     </div>
 
+    <!-- 新增年份的Modal -->
+    <div class="modal fade" id="addYearModal" tabindex="-1">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">新增年份</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="addYearInput" class="form-label">年份</label>
+                        <input type="number" class="form-control" id="addYearInput" placeholder="輸入年份 (如: 2024)" min="2000" max="2100">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="confirmAddYear()">新增</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 年份管理的Modal -->
+    <div class="modal fade" id="yearManagementModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">年份管理</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="mb-0">現有年份</h6>
+                        <button type="button" class="btn btn-primary btn-sm" onclick="addNewYearInManagement()">
+                            <i class="bi bi-plus-circle"></i> 新增年份
+                        </button>
+                    </div>
+                    <div class="list-group" id="yearManagementList">
+                        <!-- 年份列表將通過 JavaScript 動態載入 -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Bootstrap Bundle with Popper -->
     <script src="/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
     
     <!-- Custom JavaScript -->
     <script>
-        function editImage(id) {
+        // 編輯圖片功能
+        function editImage(id, category) {
+            console.log('Attempting to edit image with id:', id, 'category:', category);
+            
             // 載入數據到表單
             fetch(`/api/images/${id}`)
-                .then(response => response.json())
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    if (!response.ok) {
+                        return response.json().then(errorData => {
+                            throw new Error(`HTTP ${response.status}: ${errorData.message || errorData.error || 'Unknown error'}`);
+                        });
+                    }
+                    return response.json();
+                })
                 .then(data => {
-                    document.getElementById('imageId').value = data.id;
-                    document.getElementById('category').value = data.category;
-                    document.getElementById('description').value = data.description;
+                    console.log('Loaded image data:', data);
+                    document.getElementById('imageId').value = data.id || '';
+                    document.getElementById('imageCategory').value = category || data.category || '';
+                    document.getElementById('description').value = data.description || '';
+                    
+                    // 處理年份選擇
+                    if (category === 'event') {
+                        document.getElementById('yearSelectGroup').style.display = 'block';
+                        document.getElementById('yearSelect').value = data.year || '';
+                        document.getElementById('heroWarning').style.display = 'none';
+                    } else {
+                        document.getElementById('yearSelectGroup').style.display = 'none';
+                        if (category === 'hero') {
+                            document.getElementById('heroWarning').style.display = 'block';
+                        } else {
+                            document.getElementById('heroWarning').style.display = 'none';
+                        }
+                    }
+                    
+                    // 更改 modal 標題
+                    document.querySelector('#uploadImageModal .modal-title').textContent = '編輯圖片';
+                    document.querySelector('#uploadImageModal .btn-primary').textContent = '更新';
+                    
+                    // 清空檔案輸入
+                    document.getElementById('imageFile').value = '';
+                    document.getElementById('imageFile').removeAttribute('required');
+                    
+                    // 隱藏圖片預覽
+                    document.getElementById('imagePreview').style.display = 'none';
                     
                     // 顯示Modal
                     new bootstrap.Modal(document.getElementById('uploadImageModal')).show();
+                })
+                .catch(error => {
+                    console.error('Error loading image data:', error);
+                    alert('載入圖片資料失敗:\n' + error.message + '\n\n可能原因：\n1. 圖片不存在\n2. 資料庫連線問題\n3. 服務器內部錯誤');
                 });
+        }
+        
+        // 新增圖片功能
+        function addNewImage(category) {
+            // 清空表單
+            document.getElementById('imageForm').reset();
+            document.getElementById('imageId').value = '';
+            document.getElementById('imageCategory').value = category;
+            
+            // 根據分類決定是否顯示年份選擇
+            if (category === 'event') {
+                document.getElementById('yearSelectGroup').style.display = 'block';
+                document.getElementById('heroWarning').style.display = 'none';
+            } else {
+                document.getElementById('yearSelectGroup').style.display = 'none';
+                if (category === 'hero') {
+                    document.getElementById('heroWarning').style.display = 'block';
+                } else {
+                    document.getElementById('heroWarning').style.display = 'none';
+                }
+            }
+            
+            // 重設 modal 標題
+            document.querySelector('#uploadImageModal .modal-title').textContent = '上傳圖片';
+            document.querySelector('#uploadImageModal .btn-primary').textContent = '上傳';
+            
+            // 設置檔案為必填
+            document.getElementById('imageFile').setAttribute('required', 'required');
+            
+            // 隱藏圖片預覽
+            document.getElementById('imagePreview').style.display = 'none';
+            
+            // 顯示Modal
+            new bootstrap.Modal(document.getElementById('uploadImageModal')).show();
+        }
+        
+        // 圖片預覽功能
+        function previewImage(input) {
+            const preview = document.getElementById('imagePreview');
+            
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                
+                // 檢查檔案類型
+                if (!file.type.startsWith('image/')) {
+                    alert('請選擇圖片檔案！');
+                    input.value = '';
+                    preview.style.display = 'none';
+                    return;
+                }
+                
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                
+                reader.readAsDataURL(file);
+            } else {
+                preview.style.display = 'none';
+            }
         }
 
         function uploadImage() {
-            const formData = new FormData(document.getElementById('imageForm'));
+            const form = document.getElementById('imageForm');
+            const formData = new FormData(form);
+            const imageId = document.getElementById('imageId').value;
+            const category = document.getElementById('imageCategory').value;
+            const submitBtn = document.querySelector('#uploadImageModal .btn-primary');
+            const originalText = submitBtn.textContent;
             
-            fetch('/admin/images/upload', {
+            // 表單驗證
+            const fileInput = document.getElementById('imageFile');
+            
+            if (!imageId && (!fileInput.files || fileInput.files.length === 0)) {
+                alert('請選擇要上傳的圖片');
+                return;
+            }
+            
+            if (!category) {
+                alert('請選擇圖片分類');
+                return;
+            }
+            
+            // 處理年份
+            if (category === 'event') {
+                const yearSelect = document.getElementById('yearSelect');
+                if (yearSelect.value) {
+                    // 確保先刪除任何現有的年份字段，然後添加新的
+                    formData.delete('year');
+                    formData.append('year', yearSelect.value);
+                }
+            }
+            
+            // 檢查檔案類型（僅針對新上傳）
+            if (!imageId && fileInput.files && fileInput.files[0]) {
+                const file = fileInput.files[0];
+                if (!file.type.startsWith('image/')) {
+                    alert('請選擇圖片檔案！');
+                    return;
+                }
+            }
+            
+            // 設置載入狀態
+            submitBtn.textContent = '處理中...';
+            submitBtn.disabled = true;
+            form.classList.add('loading');
+            
+            // 統一使用 upload 端點，透過 id 參數判斷是新增還是更新
+            const url = '/admin/images/upload';
+            
+            fetch(url, {
                 method: 'POST',
                 body: formData
             })
             .then(response => response.text())
             .then(result => {
                 if (result === 'success') {
+                    // 關閉 modal
+                    bootstrap.Modal.getInstance(document.getElementById('uploadImageModal')).hide();
+                    // 重新載入頁面
                     location.reload();
                 } else {
-                    alert('上傳失敗');
+                    alert('操作失敗: ' + result);
                 }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('發生錯誤，請稍後再試\n\n' + error.message);
+            })
+            .finally(() => {
+                // 恢復按鈕狀態
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+                form.classList.remove('loading');
             });
         }
 
         function deleteImage(id) {
-            if (confirm('確定要刪除這張圖片嗎？')) {
-                fetch(`/admin/images/${id}`, {
-                    method: 'DELETE'
+            // 獲取圖片信息
+            fetch(`/api/images/${id}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
                 })
-                .then(response => response.text())
-                .then(result => {
-                    if (result === 'success') {
-                        location.reload();
-                    } else {
-                        alert('刪除失敗');
+                .then(data => {
+                    const imageName = data.description || data.originalName || '未知圖片';
+                    const category = data.category || '未分類';
+                    if (confirm(`確定要刪除圖片「${imageName}」嗎？\n分類：${category}`)) {
+                        performDelete(id);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading image info:', error);
+                    if (confirm('確定要刪除這張圖片嗎？')) {
+                        performDelete(id);
                     }
                 });
+        }
+        
+        function performDelete(id) {
+            fetch(`/admin/images/${id}`, {
+                method: 'DELETE'
+            })
+            .then(response => response.text())
+            .then(result => {
+                if (result === 'success') {
+                    // 記住當前活躍的標籤頁
+                    const activeTab = document.querySelector('#categoryTabs .nav-link.active');
+                    const activeTabId = activeTab ? activeTab.id : 'hero-tab';
+                    
+                    // 使用 URL 參數重新載入頁面
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('tab', activeTabId);
+                    window.location.href = url.toString();
+                } else {
+                    alert('刪除失敗: ' + result);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('刪除時發生錯誤');
+            });
+        }
+
+        // 隊聚活動年份篩選
+        function filterEventsByYear(year) {
+            // 更新全局變量
+            currentSelectedYear = year;
+            
+            // 更新按鈕狀態
+            document.querySelectorAll('#yearFilter .btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // 篩選圖片
+            document.querySelectorAll('#event-images .image-card').forEach(card => {
+                const cardYear = card.dataset.year;
+                if (year === 'all' || cardYear == year) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            
+            // 重置偏移量，因為篩選條件改變了
+            currentEventOffset = document.querySelectorAll('#event-images .image-card[style*="block"], #event-images .image-card:not([style*="none"])').length;
+            
+            // 重新顯示載入更多按鈕（可能之前被隱藏了）
+            const loadMoreSection = document.getElementById('loadMoreSection');
+            if (loadMoreSection) {
+                loadMoreSection.style.display = 'block';
             }
         }
 
-        // 圖片分類篩選
-        document.querySelectorAll('[data-filter]').forEach(button => {
-            button.addEventListener('click', function() {
-                const filter = this.dataset.filter;
-                
-                // 更新按鈕狀態
-                document.querySelectorAll('[data-filter]').forEach(btn => {
-                    btn.classList.remove('active');
-                });
-                this.classList.add('active');
-                
-                // 篩選圖片
-                document.querySelectorAll('.image-card').forEach(card => {
-                    if (filter === 'all' || card.dataset.category === filter) {
-                        card.style.display = 'block';
-                    } else {
-                        card.style.display = 'none';
-                    }
-                });
+        // 年份管理功能
+        function addNewYear() {
+            document.getElementById('addYearInput').value = '';
+            new bootstrap.Modal(document.getElementById('addYearModal')).show();
+        }
+
+        function confirmAddYear() {
+            const yearInput = document.getElementById('addYearInput');
+            const year = parseInt(yearInput.value);
+            
+            if (!year || year < 2000 || year > 2100) {
+                alert('請輸入有效的年份 (2000-2100)');
+                return;
+            }
+            
+            // 檢查年份是否已存在
+            const existingOptions = Array.from(document.querySelectorAll('#yearSelect option')).map(option => option.value);
+            if (existingOptions.includes(year.toString())) {
+                alert('該年份已經存在！');
+                return;
+            }
+            
+            // 添加到年份選擇器
+            const select = document.getElementById('yearSelect');
+            const option = new Option(`${year}年`, year);
+            select.appendChild(option);
+            
+            // 添加到年份篩選按鈕
+            const yearFilter = document.querySelector('#yearFilter .btn-group');
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'btn btn-outline-secondary';
+            button.onclick = () => filterEventsByYear(year);
+            button.textContent = `${year}年`;
+            yearFilter.appendChild(button);
+            
+            // 關閉modal
+            bootstrap.Modal.getInstance(document.getElementById('addYearModal')).hide();
+            
+            alert(`年份 ${year} 已成功新增！`);
+        }
+
+        // 在上傳表單中新增年份
+        function showAddYearInput() {
+            document.getElementById('yearSelectGroup').style.display = 'none';
+            document.getElementById('newYearGroup').style.display = 'block';
+            document.getElementById('newYear').focus();
+        }
+
+        function addYearToSelect() {
+            const newYearInput = document.getElementById('newYear');
+            const year = parseInt(newYearInput.value);
+            
+            if (!year || year < 2000 || year > 2100) {
+                alert('請輸入有效的年份 (2000-2100)');
+                return;
+            }
+            
+            // 檢查年份是否已存在
+            const existingOptions = Array.from(document.querySelectorAll('#yearSelect option')).map(option => option.value);
+            if (existingOptions.includes(year.toString())) {
+                alert('該年份已經存在！');
+                return;
+            }
+            
+            // 添加到選擇器並選中
+            const select = document.getElementById('yearSelect');
+            const option = new Option(`${year}年`, year);
+            option.selected = true;
+            select.appendChild(option);
+            
+            // 回到選擇模式
+            cancelAddYear();
+            
+            alert(`年份 ${year} 已新增並選中！`);
+        }
+
+        function cancelAddYear() {
+            document.getElementById('yearSelectGroup').style.display = 'block';
+            document.getElementById('newYearGroup').style.display = 'none';
+            document.getElementById('newYear').value = '';
+        }
+
+        // 年份管理功能
+        function showYearManagement() {
+            loadYearManagementList();
+            new bootstrap.Modal(document.getElementById('yearManagementModal')).show();
+        }
+
+        function loadYearManagementList() {
+            const yearList = document.getElementById('yearManagementList');
+            yearList.innerHTML = '<div class="text-center"><div class="spinner-border spinner-border-sm" role="status"></div> 載入中...</div>';
+            
+            // 獲取年份列表（從當前頁面的年份篩選按鈕中取得）
+            const yearButtons = document.querySelectorAll('#yearFilter .btn-group .btn-outline-secondary:not(:first-child)');
+            const years = Array.from(yearButtons).map(btn => {
+                const text = btn.textContent.trim();
+                return parseInt(text.replace('年', ''));
+            }).filter(year => !isNaN(year)).sort((a, b) => b - a);
+
+            yearList.innerHTML = '';
+            
+            if (years.length === 0) {
+                yearList.innerHTML = '<div class="alert alert-info mb-0">目前沒有任何年份</div>';
+                return;
+            }
+
+            years.forEach(year => {
+                const yearItem = document.createElement('div');
+                yearItem.className = 'list-group-item d-flex justify-content-between align-items-center';
+                yearItem.innerHTML = `
+                    <span>${year}年</span>
+                    <button class="btn btn-outline-danger btn-sm" onclick="deleteYearWithConfirm(${year})" title="刪除年份">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                `;
+                yearList.appendChild(yearItem);
             });
-        });
+        }
+
+        function addNewYearInManagement() {
+            // 關閉年份管理視窗，開啟新增年份視窗
+            bootstrap.Modal.getInstance(document.getElementById('yearManagementModal')).hide();
+            setTimeout(() => {
+                addNewYear();
+            }, 300);
+        }
+
+        function deleteYearWithConfirm(year) {
+            // 先檢查年份是否可以刪除
+            fetch(`/admin/images/years/check`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `year=${year}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert('檢查年份失敗: ' + data.error);
+                    return;
+                }
+                
+                if (!data.canDelete) {
+                    alert(`無法刪除 ${year} 年，因為該年份仍有照片存在。\\n請先刪除該年份的所有照片後再嘗試刪除年份。`);
+                    return;
+                }
+                
+                // 確認刪除
+                if (confirm(`確定要刪除 ${year} 年嗎？\\n此操作無法復原。`)) {
+                    deleteYear(year);
+                }
+            })
+            .catch(error => {
+                console.error('Error checking year:', error);
+                alert('檢查年份時發生錯誤');
+            });
+        }
+
+        function deleteYear(year) {
+            fetch(`/admin/images/years/${year}`, {
+                method: 'DELETE'
+            })
+            .then(response => response.text())
+            .then(result => {
+                if (result === 'success') {
+                    // 記住當前活躍的標籤頁
+                    const activeTab = document.querySelector('#categoryTabs .nav-link.active');
+                    const activeTabId = activeTab ? activeTab.id : 'hero-tab';
+                    
+                    // 使用 URL 參數重新載入頁面
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('tab', activeTabId);
+                    window.location.href = url.toString();
+                } else {
+                    alert('刪除失敗: ' + result);
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting year:', error);
+                alert('刪除年份時發生錯誤');
+            });
+        }
+
+        // 修改原有的新增年份確認功能，添加排序
+        const originalConfirmAddYear = confirmAddYear;
+        confirmAddYear = function() {
+            const yearInput = document.getElementById('addYearInput');
+            const year = parseInt(yearInput.value);
+            
+            if (!year || year < 2000 || year > 2100) {
+                alert('請輸入有效的年份 (2000-2100)');
+                return;
+            }
+            
+            // 檢查年份是否已存在
+            const existingButtons = document.querySelectorAll('#yearFilter .btn-group .btn-outline-secondary:not(:first-child)');
+            const existingYears = Array.from(existingButtons).map(btn => {
+                const text = btn.textContent.trim();
+                return parseInt(text.replace('年', ''));
+            }).filter(y => !isNaN(y));
+            
+            if (existingYears.includes(year)) {
+                alert('該年份已經存在！');
+                return;
+            }
+            
+            // 添加到年份篩選按鈕組（按降冪排序插入）
+            const btnGroup = document.querySelector('#yearFilter .btn-group');
+            const newButton = document.createElement('button');
+            newButton.type = 'button';
+            newButton.className = 'btn btn-outline-secondary';
+            newButton.onclick = () => filterEventsByYear(year);
+            newButton.textContent = `${year}年`;
+            
+            // 找到正確的插入位置（降冪排序）
+            let insertPosition = null;
+            for (let i = 1; i < btnGroup.children.length; i++) {
+                const btnText = btnGroup.children[i].textContent.trim();
+                const btnYear = parseInt(btnText.replace('年', ''));
+                if (year > btnYear) {
+                    insertPosition = i;
+                    break;
+                }
+            }
+            
+            if (insertPosition !== null) {
+                btnGroup.insertBefore(newButton, btnGroup.children[insertPosition]);
+            } else {
+                btnGroup.appendChild(newButton);
+            }
+            
+            // 同時添加到上傳表單的年份選擇器（如果存在）
+            const select = document.getElementById('yearSelect');
+            if (select) {
+                const option = new Option(`${year}年`, year);
+                
+                // 在選擇器中也要按降冪排序
+                let selectInsertPosition = null;
+                for (let i = 1; i < select.options.length; i++) {
+                    const optionYear = parseInt(select.options[i].value);
+                    if (year > optionYear) {
+                        selectInsertPosition = i;
+                        break;
+                    }
+                }
+                
+                if (selectInsertPosition !== null) {
+                    select.insertBefore(option, select.options[selectInsertPosition]);
+                } else {
+                    select.appendChild(option);
+                }
+            }
+            
+            // 關閉modal
+            bootstrap.Modal.getInstance(document.getElementById('addYearModal')).hide();
+            
+            alert(`年份 ${year} 已成功新增！`);
+        };
+
+        // 載入更多隊聚活動照片功能
+        let currentEventOffset = parseInt(document.querySelector('[th\\:text="${currentEventImageCount}"]')?.textContent || '6');
+        let currentSelectedYear = 'all'; // 追蹤當前選中的年份
+        
+        function loadMoreEventImages() {
+            const loadMoreBtn = document.getElementById('loadMoreBtn');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const btnText = loadMoreBtn.querySelector('i').nextSibling;
+            
+            // 顯示載入狀態
+            loadMoreBtn.disabled = true;
+            loadingSpinner.classList.remove('d-none');
+            
+            // 構建 URL 參數 - 減少每次載入的數量以避免傳輸問題
+            let url = `/api/images/event/more?offset=${currentEventOffset}&limit=3&category=event`;
+            if (currentSelectedYear !== 'all') {
+                url += `&year=${currentSelectedYear}`;
+            }
+            
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.status === 'error') {
+                        throw new Error(data.message || '未知错誤');
+                    }
+                    
+                    // 載入成功，添加新圖片到頁面
+                    const eventImagesContainer = document.getElementById('event-images');
+                    
+                    let addedImages = 0;
+                    data.images.forEach(image => {
+                        const imageCard = createImageCard(image);
+                        eventImagesContainer.appendChild(imageCard);
+                        
+                        // 根據當前選中的年份決定是否顯示這張圖片
+                        if (currentSelectedYear === 'all' || image.year == currentSelectedYear) {
+                            imageCard.style.display = 'block';
+                            addedImages++;
+                        } else {
+                            imageCard.style.display = 'none';
+                        }
+                    });
+                    
+                    // 更新偏移量（累加實際載入的圖片數量）
+                    currentEventOffset += data.images.length;
+                    
+                    // 更新顯示的計數
+                    const visibleImages = document.querySelectorAll('#event-images .image-card[style*="block"], #event-images .image-card:not([style*="none"])').length;
+                    const currentCountSpan = document.querySelector('[th\\:text="${currentEventImageCount}"]') || 
+                                           document.querySelector('.text-muted span:first-child');
+                    if (currentCountSpan) {
+                        currentCountSpan.textContent = visibleImages;
+                    }
+                    
+                    // 如果沒有更多照片或沒有加載符合篩選條件的圖片，隱藏載入更多按鈕
+                    if (!data.hasMore || (data.images.length === 0)) {
+                        document.getElementById('loadMoreSection').style.display = 'none';
+                    }
+                    
+                    // 如果沒有載入任何符合篩選條件的圖片，顯示提示
+                    if (addedImages === 0 && data.images.length > 0) {
+                        console.log('載入了圖片但不符合當前篩選條件');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading more images:', error);
+                    alert('載入更多照片時發生錯誤: ' + error.message);
+                })
+                .finally(() => {
+                    // 恢復按鈕狀態
+                    loadMoreBtn.disabled = false;
+                    loadingSpinner.classList.add('d-none');
+                });
+        }
+        
+        function createImageCard(image) {
+            const col = document.createElement('div');
+            col.className = 'col-md-3 image-card mb-3';
+            col.setAttribute('data-year', image.year || '');
+            
+            col.innerHTML = `
+                <div class="card">
+                    <div class="position-relative">
+                        <img src="${image.base64Data}" class="card-img-top" alt="${image.description || ''}" style="height: 150px; object-fit: cover;">
+                        ${image.year ? `<span class="badge bg-primary position-absolute top-0 start-0 m-2">${image.year}年</span>` : ''}
+                        <div class="card-img-overlay p-2">
+                            <div class="position-absolute top-0 end-0 p-2">
+                                <button class="btn btn-sm btn-light me-1" 
+                                        data-id="${image.id}"
+                                        onclick="editImage(this.getAttribute('data-id'), 'event')"
+                                        title="編輯">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger" 
+                                        data-id="${image.id}"
+                                        onclick="deleteImage(this.getAttribute('data-id'))"
+                                        title="刪除">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-2">
+                        <p class="card-text small mb-1">${image.description || ''}</p>
+                        <small class="text-muted">${image.originalName || ''}</small>
+                    </div>
+                </div>
+            `;
+            
+            return col;
+        }
+        
     </script>
 </body>
 </html>

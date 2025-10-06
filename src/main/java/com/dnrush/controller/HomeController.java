@@ -8,12 +8,10 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import com.dnrush.entity.EventPhoto;
 import com.dnrush.entity.ImageResource;
 import com.dnrush.entity.NavigationItem;
 import com.dnrush.entity.Statistic;
 import com.dnrush.entity.TeamMember;
-import com.dnrush.service.EventPhotoService;
 import com.dnrush.service.ImageService;
 import com.dnrush.service.NavigationService;
 import com.dnrush.service.SiteContentService;
@@ -35,9 +33,6 @@ public class HomeController {
     
     @Autowired
     private TeamMemberService teamMemberService;
-    
-    @Autowired
-    private EventPhotoService eventPhotoService;
     
     @Autowired
     private StatisticService statisticService;
@@ -95,10 +90,17 @@ public class HomeController {
         model.addAttribute("portfolioTitle", portfolioTitle);
         model.addAttribute("portfolioSubtitle", portfolioSubtitle);
         
-        // 隊聚活動照片
-        List<EventPhoto> eventPhotos = eventPhotoService.getActivePhotos();
-        List<Integer> activeYears = eventPhotoService.getActiveYears();
-        model.addAttribute("eventPhotos", eventPhotos);
+        // 隊聚活動照片 (從 ImageResource 中獲取 event 分類的照片)
+        List<ImageResource> eventImages = imageService.getImagesByCategory("event");
+        model.addAttribute("eventImages", eventImages);
+        
+        // 獲取可用的年份列表（從數據庫的 year 欄位，排除 null 值）
+        List<Integer> activeYearsInt = imageService.getDistinctYears();
+        List<String> activeYears = activeYearsInt.stream()
+            .filter(year -> year != null) // 過濾掉 null 值
+            .map(String::valueOf)
+            .sorted((a, b) -> b.compareTo(a)) // 降序排列
+            .toList();
         model.addAttribute("activeYears", activeYears);
         
         // Team區塊內容
@@ -166,5 +168,18 @@ public class HomeController {
         model.addAttribute("serviceImages", serviceImages);
         
         return "service-details";
+    }
+    
+    @GetMapping("/team-events")
+    public String teamEvents(Model model) {
+        // 導航欄資料
+        List<NavigationItem> navigationItems = navigationService.getActiveRootItems();
+        model.addAttribute("navigationItems", navigationItems);
+        
+        // 隊聚活動照片 (按年度分組)
+        List<ImageResource> eventImages = imageService.getImagesByCategory("event");
+        model.addAttribute("eventImages", eventImages);
+        
+        return "team-events";
     }
 }

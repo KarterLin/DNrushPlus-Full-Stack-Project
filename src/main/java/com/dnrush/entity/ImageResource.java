@@ -36,6 +36,9 @@ public class ImageResource {
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
     
+    @Column(name = "year")
+    private Integer year;
+    
     @Column(name = "is_active")
     private Boolean isActive = true;
     
@@ -136,6 +139,14 @@ public class ImageResource {
     
     public void setDescription(String description) {
         this.description = description;
+    }
+    
+    public Integer getYear() {
+        return year;
+    }
+    
+    public void setYear(Integer year) {
+        this.year = year;
     }
     
     public Boolean getIsActive() {

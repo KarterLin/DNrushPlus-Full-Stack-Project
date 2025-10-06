@@ -49,6 +49,7 @@
                <span th:text="${item.title}"></span>
             </a>
           </li>
+          <li><a href="/team-events">隊聚回顧</a></li>
         </ul>
         <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
       </nav>
@@ -82,8 +83,13 @@
             <h3 th:text="${aboutTitle}">車隊介紹</h3>
             
             <!-- 動態載入About圖片 -->
-            <div th:each="image : ${aboutImages}" th:if="${image.category == 'about'}">
-              <img th:src="${image.base64Data}" class="img-fluid rounded-4 mb-4" th:alt="${image.description}">
+            <div th:if="${aboutImages != null and !aboutImages.isEmpty()}" style="display: flex; flex-wrap: wrap; gap: 15px;">
+              <img th:each="image : ${aboutImages}" 
+                   th:if="${image.category == 'about'}"
+                   th:src="${image.base64Data}" 
+                   class="img-fluid rounded-4" 
+                   style="max-width: 350px; margin-bottom: 1rem;" 
+                   th:alt="${image.description}">
             </div>
             
             <!-- 預設圖片 -->
@@ -195,13 +201,13 @@
           </ul>
 
           <div class="row gy-4 isotope-container" data-aos="fade-up" data-aos-delay="200">
-            <div th:each="photo : ${eventPhotos}" 
-                 th:class="'col-lg-4 col-md-6 portfolio-item isotope-item filter-' + ${photo.eventYear}">
+            <div th:each="image : ${eventImages}" 
+                 th:class="'col-lg-4 col-md-6 portfolio-item isotope-item filter-' + ${image.year != null ? image.year : 'all'}">
               <div class="portfolio-content h-100">
-                <img th:src="${photo.image.base64Data}" class="img-fluid" th:alt="${photo.title}">
+                <img th:src="${image.base64Data}" class="img-fluid" th:alt="${image.description}">
                 <div class="portfolio-info">
-                  <p th:text="${photo.title}">2023宜蘭隊聚</p>
-                  <a th:href="${photo.image.base64Data}"
+                  <p th:text="${image.description}">活動標題</p>
+                  <a th:href="${image.base64Data}"
                     data-gallery="portfolio-gallery-app" class="glightbox preview-link">
                     <i class="bi bi-zoom-in"></i>
                   </a>

@@ -1,5 +1,7 @@
 package com.dnrush.controller;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -251,21 +253,55 @@ public class AdminController {
     
     // 圖片管理
     @GetMapping("/images")
-    public String imageManagement(Model model) {
-        List<ImageResource> images = imageService.getAllActiveImages();
+    public String imageManagement(@RequestParam(required = false) String category, 
+                                 Model model) {
+        // 獲取圖片列表
+        List<ImageResource> images;
+        if (category != null && !category.isEmpty()) {
+            images = imageService.getImagesByCategory(category);
+            model.addAttribute("selectedCategory", category);
+        } else {
+            images = imageService.getAllActiveImages();
+            model.addAttribute("selectedCategory", "all");
+        }
+        
+        // 簡化邏輯 - 直接載入所有圖片，不需要分頁
         model.addAttribute("images", images);
+        
+        // 添加年份列表供選擇
+        List<Integer> availableYears = imageService.getDistinctYears();
+        model.addAttribute("availableYears", availableYears);
+        
         return "admin/images";
     }
     
     @PostMapping("/images/upload")
     @ResponseBody
-    public String uploadImage(@RequestParam("file") MultipartFile file,
+    public String uploadImage(@RequestParam(value = "file", required = false) MultipartFile file,
                              @RequestParam String category,
-                             @RequestParam(required = false) String description) {
+                             @RequestParam(required = false) String description,
+                             @RequestParam(required = false) String year,
+                             @RequestParam(required = false) String id) {
         try {
-            imageService.saveImage(file, category, description);
+            Integer yearValue = null;
+            if (year != null && !year.isEmpty()) {
+                yearValue = Integer.parseInt(year);
+            }
+            
+            // 如果有 id 參數，表示是更新操作
+            if (id != null && !id.isEmpty()) {
+                Long imageId = Long.parseLong(id);
+                imageService.updateImage(imageId, file, category, description, yearValue);
+            } else {
+                // 新增操作 - 檔案必須存在
+                if (file == null || file.isEmpty()) {
+                    return "error: 請選擇要上傳的圖片檔案";
+                }
+                imageService.saveImage(file, category, description, yearValue);
+            }
             return "success";
         } catch (Exception e) {
+            logger.error("Error processing image", e);
             return "error: " + e.getMessage();
         }
     }
@@ -289,6 +325,36 @@ public class AdminController {
     public String deleteImage(@PathVariable Long id) {
         try {
             imageService.deleteImage(id);
+            return "success";
+        } catch (Exception e) {
+            return "error: " + e.getMessage();
+        }
+    }
+    
+    @PostMapping("/images/years/check")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> checkYearCanDelete(@RequestParam Integer year) {
+        try {
+            boolean canDelete = imageService.canDeleteYear(year);
+            Map<String, Object> response = new HashMap<>();
+            response.put("canDelete", canDelete);
+            response.put("year", year);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("error", e.getMessage());
+            return ResponseEntity.status(500).body(response);
+        }
+    }
+    
+    @DeleteMapping("/images/years/{year}")
+    @ResponseBody
+    public String deleteYear(@PathVariable Integer year) {
+        try {
+            if (!imageService.canDeleteYear(year)) {
+                return "error: 該年份仍有照片存在，無法刪除";
+            }
+            imageService.deleteYear(year);
             return "success";
         } catch (Exception e) {
             return "error: " + e.getMessage();

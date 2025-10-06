@@ -9,9 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -46,7 +44,24 @@ public class ImageService {
         return imageResourceRepository.findByNameAndIsActiveTrue(name).orElse(null);
     }
     
+
+    
     public ImageResource saveImage(MultipartFile file, String category, String description) throws IOException {
+        return saveImage(file, category, description, null);
+    }
+    
+    public ImageResource saveImage(MultipartFile file, String category, String description, Integer year) throws IOException {
+        // 檢查首頁橫幅的唯一性
+        if ("hero".equals(category)) {
+            List<ImageResource> existingHeroImages = imageResourceRepository.findActiveByCategory("hero");
+            if (!existingHeroImages.isEmpty()) {
+                // 刪除現有的首頁橫幅圖片
+                for (ImageResource existingImage : existingHeroImages) {
+                    deleteImage(existingImage.getId());
+                }
+            }
+        }
+        
         String originalFilename = file.getOriginalFilename();
         String fileExtension = getFileExtension(originalFilename);
         String uniqueName = UUID.randomUUID().toString() + fileExtension;
@@ -74,6 +89,7 @@ public class ImageService {
         imageResource.setFileSize(file.getSize());
         imageResource.setCategory(category);
         imageResource.setDescription(description);
+        imageResource.setYear(year);
         
         return imageResourceRepository.save(imageResource);
     }
@@ -94,7 +110,32 @@ public class ImageService {
         return imageResourceRepository.findActiveWithBase64Data();
     }
     
+    public List<Integer> getDistinctYears() {
+        return imageResourceRepository.findDistinctYears();
+    }
+    
+    public boolean canDeleteYear(Integer year) {
+        List<ImageResource> imagesWithYear = imageResourceRepository.findActiveByCategoryAndYear("event", year);
+        return imagesWithYear.isEmpty();
+    }
+    
+    public void deleteYear(Integer year) {
+        // 年份本身不需要從資料庫中刪除，只要沒有照片使用該年份即可
+        // 這個方法主要是為了一致性，實際上年份會在沒有相關照片時自動消失
+    }
+    
+    public List<ImageResource> getImagesByCategoryAndYear(String category, Integer year) {
+        if (year == null) {
+            return imageResourceRepository.findActiveByCategory(category);
+        }
+        return imageResourceRepository.findActiveByCategoryAndYear(category, year);
+    }
+    
     public ImageResource updateImage(Long id, MultipartFile file, String category, String description) throws IOException {
+        return updateImage(id, file, category, description, null);
+    }
+    
+    public ImageResource updateImage(Long id, MultipartFile file, String category, String description, Integer year) throws IOException {
         ImageResource existingImage = getImageById(id);
         if (existingImage == null) {
             return null;
@@ -138,6 +179,10 @@ public class ImageService {
             existingImage.setDescription(description);
         }
         
+        if (year != null) {
+            existingImage.setYear(year);
+        }
+        
         return imageResourceRepository.save(existingImage);
     }
     
@@ -151,6 +196,23 @@ public class ImageService {
             // 刪除資料庫記錄
             imageResourceRepository.deleteById(id);
         }
+    }
+    
+    // 分頁方法
+    public List<ImageResource> getAllImagesPaginated(int offset, int limit) {
+        return imageResourceRepository.findByStatusOrderByYearDescCreatedAtDescWithPagination(true, offset, limit);
+    }
+    
+    public List<ImageResource> getImagesByCategoryPaginated(String category, int offset, int limit) {
+        return imageResourceRepository.findByCategoryAndStatusOrderByYearDescCreatedAtDescWithPagination(category, true, offset, limit);
+    }
+    
+    public List<ImageResource> getImagesByYearPaginated(String year, int offset, int limit) {
+        return imageResourceRepository.findByYearAndStatusOrderByCreatedAtDescWithPagination(year, true, offset, limit);
+    }
+    
+    public List<ImageResource> getImagesByCategoryAndYearPaginated(String category, String year, int offset, int limit) {
+        return imageResourceRepository.findByCategoryAndYearAndStatusOrderByCreatedAtDescWithPagination(category, year, true, offset, limit);
     }
     
     private String getFileExtension(String filename) {

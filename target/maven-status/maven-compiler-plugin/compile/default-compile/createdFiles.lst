@@ -9,7 +9,6 @@ com\dnrush\service\NavigationService.class
 com\dnrush\service\SiteContentService.class
 com\dnrush\config\CorsConfig.class
 com\dnrush\service\ContactService.class
-com\dnrush\service\MarkdownService.class
 com\dnrush\controller\ApiController.class
 com\dnrush\entity\SiteContent$ContentType.class
 com\dnrush\service\EventPhotoService.class
@@ -17,6 +16,7 @@ com\dnrush\repository\SiteContentRepository.class
 com\dnrush\service\StatisticService.class
 com\dnrush\controller\AdminController.class
 com\dnrush\config\WebConfig.class
+com\dnrush\config\FileUploadConfig.class
 com\dnrush\repository\StatisticRepository.class
 com\dnrush\entity\Statistic.class
 com\dnrush\entity\ImageResource.class
