@@ -104,4 +104,23 @@ public class ContactService {
     public List<ContactSubmission> getSubmissionsByDateRange(LocalDateTime startDate, LocalDateTime endDate) {
         return contactSubmissionRepository.findByDateRange(startDate, endDate);
     }
+    
+    /**
+     * 獲取聯絡表單總數量
+     */
+    public long getTotalCount() {
+        return contactSubmissionRepository.count();
+    }
+    
+    /**
+     * 獲取最後更新時間
+     */
+    public String getLastUpdateTime() {
+        List<ContactSubmission> submissions = contactSubmissionRepository.findAllByOrderByCreatedAtDesc();
+        if (!submissions.isEmpty()) {
+            LocalDateTime lastUpdate = submissions.get(0).getCreatedAt();
+            return lastUpdate.toString().replace("T", " ");
+        }
+        return "無記錄";
+    }
 }

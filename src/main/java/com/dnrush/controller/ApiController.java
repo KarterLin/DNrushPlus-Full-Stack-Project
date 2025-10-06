@@ -19,12 +19,10 @@ import org.springframework.web.bind.annotation.RestController;
 import com.dnrush.entity.ImageResource;
 import com.dnrush.entity.NavigationItem;
 import com.dnrush.entity.SiteContent;
-import com.dnrush.entity.Statistic;
 import com.dnrush.entity.TeamMember;
 import com.dnrush.service.ImageService;
 import com.dnrush.service.NavigationService;
 import com.dnrush.service.SiteContentService;
-import com.dnrush.service.StatisticService;
 import com.dnrush.service.TeamMemberService;
 
 @RestController
@@ -44,9 +42,6 @@ public class ApiController {
     
     @Autowired
     private TeamMemberService teamMemberService;
-    
-    @Autowired
-    private StatisticService statisticService;
     
     // 導航欄API
     @GetMapping("/navigation")
@@ -199,21 +194,6 @@ public class ApiController {
         }
     }
     
-    // 統計數據API
-    @GetMapping("/statistics")
-    public ResponseEntity<List<Statistic>> getStatistics() {
-        List<Statistic> statistics = statisticService.getActiveStatistics();
-        return ResponseEntity.ok(statistics);
-    }
-    
-    @GetMapping("/statistics/{statKey}")
-    public ResponseEntity<Map<String, String>> getStatisticByKey(@PathVariable String statKey) {
-        String value = statisticService.getStatisticValue(statKey);
-        Map<String, String> response = new HashMap<>();
-        response.put("value", value);
-        return ResponseEntity.ok(response);
-    }
-    
     // 網站資料API (整合所有資料)
     @GetMapping("/website-data")
     public ResponseEntity<Map<String, Object>> getWebsiteData() {
@@ -224,9 +204,6 @@ public class ApiController {
         
         // 網站內容
         websiteData.put("content", siteContentService.getAllActiveContent());
-        
-        // 統計數據
-        websiteData.put("statistics", statisticService.getActiveStatistics());
         
         // 團隊成員
         websiteData.put("teamMembers", teamMemberService.getActiveMembers());

@@ -55,7 +55,45 @@ public class AdminController {
     // 管理首頁
     @GetMapping
     public String adminIndex(Model model) {
-        return "admin/index";
+        try {
+            // 統計數據
+            long contactSubmissionCount = contactService.getTotalCount();
+            long activeTeamMemberCount = teamMemberService.getActiveCount();
+            long activeImageCount = imageService.getActiveCount();
+            
+            // 獲取最後更新時間（資料庫最後異動時間）
+            String lastUpdateTime = getLastDatabaseUpdateTime();
+            
+            model.addAttribute("contactSubmissionCount", contactSubmissionCount);
+            model.addAttribute("activeTeamMemberCount", activeTeamMemberCount);
+            model.addAttribute("activeImageCount", activeImageCount);
+            model.addAttribute("lastUpdateTime", lastUpdateTime);
+            
+            return "admin/index";
+        } catch (Exception e) {
+            logger.error("載入儀表板數據時出錯", e);
+            // 設置預設值以防錯誤
+            model.addAttribute("contactSubmissionCount", 0L);
+            model.addAttribute("activeTeamMemberCount", 0L);
+            model.addAttribute("activeImageCount", 0L);
+            model.addAttribute("lastUpdateTime", "無法獲取");
+            return "admin/index";
+        }
+    }
+    
+    /**
+     * 獲取資料庫最後更新時間
+     * 查詢所有主要表的最新記錄更新時間
+     */
+    private String getLastDatabaseUpdateTime() {
+        try {
+            // 這裡可以查詢各表的最新更新時間，選擇最新的一個
+            // 暫時使用聯絡表單的最新時間作為示例
+            return contactService.getLastUpdateTime();
+        } catch (Exception e) {
+            logger.warn("無法獲取資料庫最後更新時間", e);
+            return "無法獲取";
+        }
     }
     
     // 導航欄管理

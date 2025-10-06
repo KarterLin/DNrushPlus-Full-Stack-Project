@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS image_resources (
     file_size BIGINT COMMENT '檔案大小(位元組)',
     category VARCHAR(100) COMMENT '圖片分類(hero, about, team, portfolio等)',
     description TEXT COMMENT '圖片描述',
+    year INT COMMENT '年份',
     is_active BOOLEAN DEFAULT TRUE COMMENT '是否啟用',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -62,35 +63,6 @@ CREATE TABLE IF NOT EXISTS team_members (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (avatar_image_id) REFERENCES image_resources(id) ON DELETE SET NULL
-);
-
--- 隊聚活動照片表
-CREATE TABLE IF NOT EXISTS event_photos (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    title VARCHAR(255) NOT NULL COMMENT '照片標題',
-    description TEXT COMMENT '照片描述',
-    event_year INT COMMENT '活動年份',
-    event_month INT COMMENT '活動月份',
-    event_location VARCHAR(255) COMMENT '活動地點',
-    image_id BIGINT NOT NULL COMMENT '圖片ID',
-    sort_order INT DEFAULT 0 COMMENT '排序順序',
-    is_active BOOLEAN DEFAULT TRUE COMMENT '是否啟用',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (image_id) REFERENCES image_resources(id) ON DELETE CASCADE
-);
-
--- 統計數據表
-CREATE TABLE IF NOT EXISTS statistics (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    stat_key VARCHAR(100) NOT NULL UNIQUE COMMENT '統計鍵值',
-    stat_value VARCHAR(100) NOT NULL COMMENT '統計數值',
-    stat_label VARCHAR(100) COMMENT '統計標籤',
-    icon_class VARCHAR(100) COMMENT '圖示CSS類別',
-    sort_order INT DEFAULT 0 COMMENT '排序順序',
-    is_active BOOLEAN DEFAULT TRUE COMMENT '是否啟用',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 -- 聯絡表單提交記錄表

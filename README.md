@@ -4,7 +4,7 @@
 
 ## 專案特色
 
-- **Spring Boot MVC架構**: 使用Java 17 + Spring Boot 3.2.0
+- **Spring Boot MVC架構**: 使用Java 25 + Spring Boot 3.2.0
 - **MySQL資料庫**: 完整的資料庫設計和初始化腳本
 - **圖片Base64處理**: 支援圖片上傳、轉換為Base64格式存儲
 - **動態導航欄**: 後端控制導航欄內容和結構
@@ -15,7 +15,7 @@
 ## 技術棧
 
 ### 後端
-- Java 17
+- Java 25
 - Spring Boot 3.2.0
 - Spring Data JPA
 - Spring MVC
@@ -53,11 +53,9 @@ src/
 
 ### 主要資料表
 - `navigation_items`: 導航欄項目
-- `image_resources`: 圖片資源（支援Base64）
+- `image_resources`: 圖片資源（支援Base64和年份分類）
 - `site_contents`: 網站內容
 - `team_members`: 團隊成員
-- `event_photos`: 隊聚活動照片
-- `statistics`: 統計數據
 - `contact_submissions`: 聯絡表單提交記錄
 
 ## 功能特色
@@ -70,7 +68,8 @@ src/
 ### 2. 圖片Base64處理
 - 圖片上傳自動轉換為Base64
 - 支援多種圖片格式
-- 圖片分類管理
+- 圖片分類管理（hero、about、event、service、rules）
+- 年份分類支援（隊聚活動照片）
 
 ### 3. 內容管理系統
 - 動態網站內容管理
@@ -85,7 +84,7 @@ src/
 ## 安裝與運行
 
 ### 環境要求
-- Java 17+
+- Java 25+
 - MySQL 8.0+
 - Maven 3.6+
 
@@ -100,7 +99,7 @@ cd dnrush-plus-website
 2. **配置資料庫**
 ```sql
 -- 創建資料庫
-CREATE DATABASE dnrush_website CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE dnrush_plus CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
 3. **修改配置**
@@ -108,7 +107,7 @@ CREATE DATABASE dnrush_website CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```yaml
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/dnrush_website?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://localhost:3306/dnrush_plus?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
     username: your_username
     password: your_password
 ```
@@ -130,8 +129,7 @@ mvn spring-boot:run
 - `GET /api/content/{contentKey}` - 獲取網站內容
 - `GET /api/images/category/{category}` - 獲取分類圖片
 - `GET /api/team` - 獲取團隊成員
-- `GET /api/events` - 獲取隊聚活動照片
-- `GET /api/statistics` - 獲取統計數據
+- `GET /api/images/event/more` - 載入更多隊聚活動照片
 
 ### 後台API
 - `POST /contact/submit` - 提交聯絡表單
@@ -207,7 +205,20 @@ String content = siteContentService.getContentValue("content_key");
 
 ## 更新日誌
 
-### v1.0.0 (2024-01-01)
+### v1.2.0 (2025-10-07)
+- 數據庫架構優化：移除未使用的表格（event_photos, statistics）
+- 圖片管理系統改進：支援年份分類
+- 管理後台優化：整合真實數據統計
+- 隱私保護：移除IP地址和User-Agent追蹤
+- 代碼清理：移除冗餘功能和未使用代碼
+
+### v1.1.0 (2025-10-06)
+- 新增年份管理功能
+- 優化圖片管理界面
+- 改進管理後台功能
+- 新增隊聚活動照片分類
+
+### v1.0.0 (2025-10-05)
 - 初始版本發布
 - 完整的Spring Boot MVC架構
 - 支援圖片Base64處理

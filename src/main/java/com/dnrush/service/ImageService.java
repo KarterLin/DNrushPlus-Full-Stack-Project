@@ -227,4 +227,11 @@ public class ImageService {
         int lastDotIndex = filename.lastIndexOf('.');
         return lastDotIndex == -1 ? "" : filename.substring(lastDotIndex);
     }
+    
+    /**
+     * 獲取活躍圖片數量
+     */
+    public long getActiveCount() {
+        return imageResourceRepository.findByIsActiveTrueOrderByCreatedAtDesc().size();
+    }
 }

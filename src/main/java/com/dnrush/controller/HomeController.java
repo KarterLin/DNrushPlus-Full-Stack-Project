@@ -10,12 +10,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.dnrush.entity.ImageResource;
 import com.dnrush.entity.NavigationItem;
-import com.dnrush.entity.Statistic;
 import com.dnrush.entity.TeamMember;
 import com.dnrush.service.ImageService;
 import com.dnrush.service.NavigationService;
 import com.dnrush.service.SiteContentService;
-import com.dnrush.service.StatisticService;
 import com.dnrush.service.TeamMemberService;
 
 @Controller
@@ -33,9 +31,6 @@ public class HomeController {
     
     @Autowired
     private TeamMemberService teamMemberService;
-    
-    @Autowired
-    private StatisticService statisticService;
     
     @GetMapping
     public String index(Model model) {
@@ -69,10 +64,6 @@ public class HomeController {
         // About區塊圖片
         List<ImageResource> aboutImages = imageService.getImagesByCategory("about");
         model.addAttribute("aboutImages", aboutImages);
-        
-        // 統計數據
-        List<Statistic> statistics = statisticService.getActiveStatistics();
-        model.addAttribute("statistics", statistics);
         
         // Services區塊內容
         String servicesTitle = siteContentService.getContentValue("services_title", "團隊取得的佳績");

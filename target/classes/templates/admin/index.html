@@ -65,31 +65,14 @@
 
                 <!-- 統計卡片 -->
                 <div class="row">
-                    <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card border-left-primary shadow h-100 py-2">
-                            <div class="card-body">
-                                <div class="row no-gutters align-items-center">
-                                    <div class="col mr-2">
-                                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                            總瀏覽量</div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800">1,234</div>
-                                    </div>
-                                    <div class="col-auto">
-                                        <i class="bi bi-eye text-gray-300"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="col-xl-4 col-md-6 mb-4">
                         <div class="card border-left-success shadow h-100 py-2">
                             <div class="card-body">
                                 <div class="row no-gutters align-items-center">
                                     <div class="col mr-2">
                                         <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
                                             聯絡表單</div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800">56</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${contactSubmissionCount}">0</div>
                                     </div>
                                     <div class="col-auto">
                                         <i class="bi bi-envelope text-gray-300"></i>
@@ -99,14 +82,14 @@
                         </div>
                     </div>
 
-                    <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="col-xl-4 col-md-6 mb-4">
                         <div class="card border-left-info shadow h-100 py-2">
                             <div class="card-body">
                                 <div class="row no-gutters align-items-center">
                                     <div class="col mr-2">
                                         <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
                                             團隊成員</div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800">12</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${activeTeamMemberCount}">0</div>
                                     </div>
                                     <div class="col-auto">
                                         <i class="bi bi-people text-gray-300"></i>
@@ -116,14 +99,14 @@
                         </div>
                     </div>
 
-                    <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="col-xl-4 col-md-6 mb-4">
                         <div class="card border-left-warning shadow h-100 py-2">
                             <div class="card-body">
                                 <div class="row no-gutters align-items-center">
                                     <div class="col mr-2">
                                         <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
                                             圖片數量</div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800">89</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${activeImageCount}">0</div>
                                     </div>
                                     <div class="col-auto">
                                         <i class="bi bi-image text-gray-300"></i>
@@ -152,7 +135,7 @@
                                     <a href="/admin/team" class="list-group-item list-group-item-action">
                                         <i class="bi bi-person-plus"></i> 新增團隊成員
                                     </a>
-                                    <a href="/contact/submissions" class="list-group-item list-group-item-action">
+                                    <a href="/admin/contact-submissions" class="list-group-item list-group-item-action">
                                         <i class="bi bi-envelope-check"></i> 查看聯絡表單
                                     </a>
                                 </div>
@@ -169,7 +152,7 @@
                                 <p><strong>系統版本:</strong> Spring Boot 3.2.0</p>
                                 <p><strong>資料庫:</strong> MySQL 8.0</p>
                                 <p><strong>Java版本:</strong> 17</p>
-                                <p><strong>最後更新:</strong> <span th:text="${#dates.format(#dates.createNow(), 'yyyy-MM-dd HH:mm:ss')}"></span></p>
+                                <p><strong>最後更新:</strong> <span th:text="${lastUpdateTime}">無法獲取</span></p>
                             </div>
                         </div>
                     </div>

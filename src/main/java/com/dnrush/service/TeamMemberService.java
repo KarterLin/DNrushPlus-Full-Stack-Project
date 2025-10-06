@@ -96,4 +96,11 @@ public class TeamMemberService {
     public List<TeamMember> getAllMembers() {
         return teamMemberRepository.findAll();
     }
+    
+    /**
+     * 獲取活躍團隊成員數量
+     */
+    public long getActiveCount() {
+        return teamMemberRepository.findActiveMembers().size();
+    }
 }

@@ -166,27 +166,6 @@
       </div>
     </section><!-- /About Section -->
 
-    <!-- Stats Section -->
-    <section id="stats" class="stats section light-background">
-      <div class="container" data-aos="fade-up" data-aos-delay="100">
-        <div class="row gy-4">
-          <div class="col-lg-4 col-md-6" th:each="stat, iterStat : ${statistics}">
-            <div class="stats-item d-flex align-items-center w-100 h-100">
-              <i th:class="${stat.iconClass}" class="flex-shrink-0"></i>
-              <div>
-                <span th:if="${stat.statValue != '∞'}" 
-                      th:attr="data-purecounter-start=0, data-purecounter-end=${stat.statValue}, data-purecounter-duration=1"
-                      class="purecounter" th:text="${stat.statValue}">18</span>
-                <span th:if="${stat.statValue == '∞'}" 
-                      id="infinity-counter" class="infinity-counter" th:text="${stat.statValue}">∞</span>
-                <p th:text="${stat.statLabel}">years of history</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section><!-- /Stats Section -->
-
     <!-- Services Section -->
     <section id="services" class="services section">
       <div class="container section-title" data-aos="fade-up">
