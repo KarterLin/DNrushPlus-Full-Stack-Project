@@ -215,6 +215,11 @@ public class ImageService {
         return imageResourceRepository.findByCategoryAndYearAndStatusOrderByCreatedAtDescWithPagination(category, year, true, offset, limit);
     }
     
+    // 專門為 TeamMemberService 提供的 ImageResource 保存方法
+    public ImageResource saveImageResource(ImageResource imageResource) {
+        return imageResourceRepository.save(imageResource);
+    }
+    
     private String getFileExtension(String filename) {
         if (filename == null || filename.isEmpty()) {
             return "";

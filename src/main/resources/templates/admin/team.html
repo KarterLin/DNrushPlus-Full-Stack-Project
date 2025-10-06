@@ -48,16 +48,43 @@
             width: 100%;
             height: 200px;
             object-fit: cover;
-            border-radius: 10px;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
         }
 
         .social-links a {
             margin-right: 10px;
             color: #6c757d;
+            font-size: 1.2em;
+            text-decoration: none;
         }
 
         .social-links a:hover {
             color: #0d6efd;
+        }
+
+        .card {
+            border: none;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        .card-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-text {
+            color: #6c757d;
+            margin-bottom: 1rem;
         }
     </style>
 </head>
@@ -101,13 +128,8 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/admin/events">
-                                <i class="bi bi-calendar-event"></i> 隊聚活動
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/admin/statistics">
-                                <i class="bi bi-graph-up"></i> 統計數據
+                            <a class="nav-link" href="/admin/contact-submissions">
+                                <i class="bi bi-envelope"></i> 聯絡表單
                             </a>
                         </li>
                     </ul>
@@ -187,7 +209,18 @@
                         </div>
                         <div class="mb-3">
                             <label for="memberAvatar" class="form-label">頭像</label>
-                            <input type="file" class="form-control" id="memberAvatar" name="avatar" accept="image/*">
+                            <input type="file" class="form-control" id="memberAvatar" name="avatar" accept="image/*" onchange="previewAvatar(event)">
+                            <div class="mt-2">
+                                <img id="avatarPreview" src="" alt="頭像預覽" style="max-width: 150px; max-height: 150px; display: none; border-radius: 8px; border: 1px solid #ddd;">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="memberDescription" class="form-label">描述</label>
+                            <textarea class="form-control" id="memberDescription" name="description" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="memberSortOrder" class="form-label">排序順序</label>
+                            <input type="number" class="form-control" id="memberSortOrder" name="sortOrder" value="0" min="0">
                         </div>
                         <div class="mb-3">
                             <label for="facebookUrl" class="form-label">Facebook連結</label>
@@ -230,7 +263,21 @@
             // 清空表單
             document.getElementById('memberForm').reset();
             document.getElementById('memberId').value = '';
+            document.getElementById('avatarPreview').style.display = 'none';
             memberModal.show();
+        }
+
+        function previewAvatar(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('avatarPreview');
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
         }
 
         function editMember(id) {
@@ -241,17 +288,38 @@
                     document.getElementById('memberId').value = data.id;
                     document.getElementById('memberName').value = data.name;
                     document.getElementById('memberPosition').value = data.position;
+                    document.getElementById('memberDescription').value = data.description || '';
+                    document.getElementById('memberSortOrder').value = data.sortOrder || 0;
                     document.getElementById('facebookUrl').value = data.facebookUrl || '';
                     document.getElementById('instagramUrl').value = data.instagramUrl || '';
                     document.getElementById('youtubeUrl').value = data.youtubeUrl || '';
                     document.getElementById('githubUrl').value = data.githubUrl || '';
                     
+                    // 顯示現有頭像
+                    const preview = document.getElementById('avatarPreview');
+                    if (data.avatarImage && data.avatarImage.base64Data) {
+                        preview.src = data.avatarImage.base64Data;
+                        preview.style.display = 'block';
+                    } else {
+                        preview.style.display = 'none';
+                    }
+                    
                     memberModal.show();
+                })
+                .catch(error => {
+                    console.error('載入成員資料失敗:', error);
+                    alert('載入成員資料失敗');
                 });
         }
 
         function saveMember() {
             const formData = new FormData(document.getElementById('memberForm'));
+            
+            // 顯示載入狀態
+            const saveButton = document.querySelector('#memberModal .btn-primary');
+            const originalText = saveButton.textContent;
+            saveButton.textContent = '儲存中...';
+            saveButton.disabled = true;
             
             fetch('/admin/team', {
                 method: 'POST',
@@ -263,13 +331,22 @@
                     memberModal.hide();
                     location.reload();
                 } else {
-                    alert('保存失敗');
+                    alert('保存失敗: ' + result);
                 }
+            })
+            .catch(error => {
+                console.error('保存失敗:', error);
+                alert('保存失敗，請重試');
+            })
+            .finally(() => {
+                // 恢復按鈕狀態
+                saveButton.textContent = originalText;
+                saveButton.disabled = false;
             });
         }
 
         function deleteMember(id) {
-            if (confirm('確定要刪除這位成員嗎？')) {
+            if (confirm('確定要刪除這位成員嗎？此操作無法復原。')) {
                 fetch(`/admin/team/${id}`, {
                     method: 'DELETE'
                 })
@@ -278,8 +355,12 @@
                     if (result === 'success') {
                         location.reload();
                     } else {
-                        alert('刪除失敗');
+                        alert('刪除失敗: ' + result);
                     }
+                })
+                .catch(error => {
+                    console.error('刪除失敗:', error);
+                    alert('刪除失敗，請重試');
                 });
             }
         }

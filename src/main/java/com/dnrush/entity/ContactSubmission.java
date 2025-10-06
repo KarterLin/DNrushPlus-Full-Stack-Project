@@ -27,13 +27,6 @@ public class ContactSubmission {
     @Column(name = "message", nullable = false, columnDefinition = "TEXT")
     private String message;
     
-    @Column(name = "ip_address", length = 45)
-    private String ipAddress;
-    
-    @Lob
-    @Column(name = "user_agent", columnDefinition = "TEXT")
-    private String userAgent;
-    
     @Column(name = "is_processed")
     private Boolean isProcessed = false;
     
@@ -104,22 +97,6 @@ public class ContactSubmission {
     
     public void setMessage(String message) {
         this.message = message;
-    }
-    
-    public String getIpAddress() {
-        return ipAddress;
-    }
-    
-    public void setIpAddress(String ipAddress) {
-        this.ipAddress = ipAddress;
-    }
-    
-    public String getUserAgent() {
-        return userAgent;
-    }
-    
-    public void setUserAgent(String userAgent) {
-        this.userAgent = userAgent;
     }
     
     public Boolean getIsProcessed() {

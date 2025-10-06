@@ -30,7 +30,7 @@
   <link href="/assets/css/main.css" rel="stylesheet">
 </head>
 
-<body class="index-page">
+<body class="rules-details-page">
 
   <header id="header" class="header d-flex align-items-center fixed-top">
     <div class="container-fluid container-xl position-relative d-flex align-items-center">
@@ -41,103 +41,196 @@
 
       <nav id="navmenu" class="navmenu">
         <ul>
-          <li th:each="item : ${navigationItems}" th:if="${item.parent == null}">
+          <li th:each="item : ${navigationItems}">
             <a th:href="${item.url}" th:text="${item.title}"></a>
-            
-            <!-- 子選單 -->
-            <ul th:if="${item.children != null and !item.children.isEmpty()}">
-              <li th:each="child : ${item.children}">
-                <a th:href="${child.url}" th:text="${child.title}"></a>
-                
-                <!-- 孫選單 -->
-                <ul th:if="${child.children != null and !child.children.isEmpty()}">
-                  <li th:each="grandchild : ${child.children}">
-                    <a th:href="${grandchild.url}" th:text="${grandchild.title}"></a>
-                  </li>
-                </ul>
-              </li>
-            </ul>
           </li>
         </ul>
         <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
       </nav>
+
+      <a class="cta-btn" href="/#hero">返回首頁</a>
+
     </div>
   </header>
 
   <main class="main">
+
     <!-- Page Title -->
-    <div class="page-title">
-      <div class="container">
-        <h1 th:text="${rulesTitle}">填寫入隊申請前請先詳閱</h1>
+    <div class="page-title dark-background" data-aos="fade" style="background-image: url(/assets/img/hero-bg.jpg);">
+      <div class="container position-relative">
+        <h1>DN車隊隊規、入隊標準</h1>
         <nav class="breadcrumbs">
           <ol>
             <li><a href="/">首頁</a></li>
-            <li th:text="${rulesSubtitle}">隊規、入隊標準</li>
+            <li class="current">隊規、入隊標準</li>
           </ol>
         </nav>
       </div>
-    </div>
+    </div><!-- End Page Title -->
 
-    <!-- Rules Content -->
-    <section class="section">
+    <!-- Features Section    菜單切換內容-->
+    <section id="features" class="features section">
+
       <div class="container">
-        <div class="row">
-          <div class="col-lg-12">
-            <div class="content">
-              <h2>入隊標準</h2>
-              <p>歡迎對跑跑卡丁車有熱忱的玩家加入DiviNe車隊！以下是我們的入隊標準：</p>
-              
-              <h3>競速組入隊標準</h3>
-              <ul>
-                <li>具備基本的競速技巧</li>
-                <li>能夠配合車隊活動時間</li>
-                <li>有良好的團隊合作精神</li>
-                <li>遵守車隊規章制度</li>
-              </ul>
-              
-              <h3>道具組入隊標準</h3>
-              <ul>
-                <li>熟悉道具使用技巧</li>
-                <li>具備戰術思維</li>
-                <li>能夠配合隊友進行戰術配合</li>
-                <li>有良好的溝通能力</li>
-              </ul>
-              
-              <h2>隊規</h2>
-              <p>為了維護車隊的良好風氣，請所有隊員遵守以下規定：</p>
-              
-              <h3>基本規範</h3>
-              <ul>
-                <li>尊重所有隊員，不得進行人身攻擊</li>
-                <li>不得使用外掛或任何作弊程式</li>
-                <li>保持遊戲中的良好形象</li>
-                <li>積極參與車隊活動</li>
-              </ul>
-              
-              <h3>活動規範</h3>
-              <ul>
-                <li>準時參加車隊活動</li>
-                <li>如有事無法參加，請提前告知</li>
-                <li>活動期間保持專注，不得分心</li>
-                <li>服從隊長和幹部的指揮</li>
-              </ul>
-              
-              <h3>處罰條例</h3>
-              <ul>
-                <li>違反隊規者將視情節輕重給予警告或除名</li>
-                <li>使用外掛者直接除名</li>
-                <li>惡意攻擊隊員者將被除名</li>
-                <li>連續三次無故缺席活動者將被除名</li>
-              </ul>
-              
-              <div class="text-center mt-5">
-                <a href="/#contact" class="btn btn-primary">我要申請入隊</a>
+
+        <ul class="nav nav-tabs row  d-flex" data-aos="fade-up" data-aos-delay="100">
+          <li class="nav-item col-3">
+            <a class="nav-link active show" data-bs-toggle="tab" data-bs-target="#features-tab-1">
+              <img src="/assets/img/game icon/g6.png" alt="隊規圖示" class="custom-icon">
+              <h4 class="d-none d-lg-block">隊規</h4>
+            </a>
+          </li>
+          <li class="nav-item col-3">
+            <a class="nav-link" data-bs-toggle="tab" data-bs-target="#features-tab-2">
+              <img src="/assets/img/game icon/g2.png" alt="隊規圖示" class="custom-icon">
+              <h4 class="d-none d-lg-block">跑跑端遊組標準<br>(停止招生)</h4>
+            </a>
+          </li>
+          <li class="nav-item col-3">
+            <a class="nav-link" data-bs-toggle="tab" data-bs-target="#features-tab-3">
+              <img src="/assets/img/game icon/g3.png" alt="隊規圖示" class="custom-icon">
+              <h4 class="d-none d-lg-block">Rush Plus競速標準</h4>
+            </a>
+          </li>
+          <li class="nav-item col-3">
+            <a class="nav-link" data-bs-toggle="tab" data-bs-target="#features-tab-4">
+              <img src="/assets/img/game icon/g4.png" alt="隊規圖示" class="custom-icon">
+              <h4 class="d-none d-lg-block">Rush Plus道具組標準</h4>
+            </a>
+          </li>
+        </ul><!-- End Tab Nav -->
+
+        <div class="tab-content" data-aos="fade-up" data-aos-delay="200">
+
+          <div class="tab-pane fade active show" id="features-tab-1">
+            <div class="row">
+              <div class="col-lg-7 order-2 order-lg-1 mt-3 mt-lg-0">
+                <h3>DiviNe車隊隊規。</h3>
+                <p class="fst-italic">
+                  適用於端遊以及Rush Plus。
+                </p>
+                <ul>
+                  <li>
+                    <span>1.考生首重人品，且互動性高，平時不管在遊戲或群組皆不能潛水，給予警告後若未改善將剔除。</span>
+                  </li>
+                  <li>
+                    <span>2.嚴禁任何分化團結，背叛車隊之情事發生，一個團隊最忌諱分化與背叛，更不可將個人不當情緒帶入車隊中造成團隊動盪，倘若對車隊、和任何人造成傷害者汰除。</span>
+                  </li>
+                  <li>
+                    <span>3.Line群組和 DISCORD 7天未發言者且7天未上DC者直接剔除（若有特殊情況不在此限，如：工作、學業等原因）</span>
+                  </li>
+                  <li>
+                    <span>4.車隊中允許男女正常交往，但不可有任何因男女私情影響整個車隊運作之情事發生，於公於私都要分的清楚。</span>
+                  </li>
+                  <li>
+                    <span>5.車隊中每一個人在內在外的行為舉止都代表著DN，無論在遊戲中、社群平台上，嚴禁任何與他人爭執辱罵或言語挑釁、騷擾等不當言行發生，若出現個人無法處理的狀況，立即向車隊回報，車隊會給予最適當的處置，並以保護自身隊員為最大原則。</span>
+                  </li>
+                  <li>
+                    <span>6.首重品性，有好的品德才有好的車技，品性惡劣及犯錯不改者汰除。</span>
+                  </li>
+                  <li>
+                    <span>7.現實生活過於忙碌或有不得已之原因需請假或是離開車隊，都必須向幹部報告，不得有任意離開把車隊當廚房進出之情事發生，否則汰除永不錄用。</span>
+                  </li>
+                  <li>
+                    <span>8.車隊幹部皆犧牲自己時間及心力為車隊及隊員推動隊務，所有人需對幹部保持尊重，不得有逾越分際之情事發生。</span>
+                  </li>
+                  <li>
+                    <span>9.隊員若有任何不平冤屈及困難請逐級向其他幹部申訴，不得私自至各大平台開副本影響車隊隊譽，以維護全體隊員既有之榮耀與權益。</span>
+                  </li>
+                  <li>
+                    <span>10.本車隊不接受雙重隊籍。</span>
+                  </li>
+                  <li>
+                    <span>11.以上隊規車隊長保有最後修改權。</span>
+                  </li>
+                  <li>
+                    <span>12.入隊後將成為觀察生一週，觀察內容為隊內互動程度、且品行良好，以上皆達成方能成為競速/道具隊員。</span>
+                  </li>
+                  <li>
+                    <span>13.入隊申請煩請於本官方網站提出申請。</span>
+                  </li>
+                </ul>
+              </div>
+              <div class="col-lg-5 order-1 order-lg-2 text-center">
+                <img src="/assets/img/logo4.jpg" alt="" class="img-fluid">
               </div>
             </div>
-          </div>
+          </div><!-- End Tab Content Item -->
+
+          <div class="tab-pane fade" id="features-tab-2">
+            <div class="row">
+              <div class="col-lg-12 order-2 order-lg-1 mt-3 mt-lg-0">
+                <h3>跑跑卡丁車端遊於2024年8月1日結束營運，故DN端遊組停止招生。</h3>
+              </div>
+            </div>
+          </div><!-- End Tab Content Item -->
+
+          <div class="tab-pane fade" id="features-tab-3">
+            <div class="row">
+              <div class="col-lg-6 order-2 order-lg-1 mt-3 mt-lg-0">
+                <h3>Rush Plus 競速組標準（男生一線以上、女生二線以上）</h3>
+                <ul>
+                  <li><i class="bi bi-exclamation-circle-fill"></i>
+                    <span>考生首重人品，且互動性高，平時不管在遊戲或群組皆不能潛水，給予警告後若未改善將剔除。</span>
+                  </li>
+                  <li><i class="bi bi-exclamation-circle-fill"></i>
+                    <span>考生須開麥，考試期間可以多與考官互動，有互動者，考官將會視情況予以機會。</span>
+                  </li>
+                  <li><span>競速：與考官排位10場，由考官判斷是否為一線（男）or二線（女）以上。</span></li>
+                  <li><span>若實戰考核表現不佳經考官討論後未通過者，可於三天後再次報考，若再未通過可於一週後再次報考，最多可重考三次（3天、一週、兩週後）。</span></li>
+                  <li><span>考試全程需使用語音辨識是否本人。</span></li>
+                  <li><span>入隊後隊員須請強制更名為DiviNeXXX。</span></li>
+                </ul>
+                <br><br><br>
+                <p class="fst-italic">
+                  ▪️每日台服交流<br>
+                  ▪️培養一線玩家訓練<br>
+                  ▪️舉辦北中南東隊聚維繫大家感情<br>
+                  ▪️不定時舉辦隊內活動
+                </p>
+              </div>
+              <div class="col-lg-6 order-1 order-lg-2 text-center">
+                <img src="/assets/img/MOB race/m1.jpg" alt="" class="img-fluid">
+              </div>
+            </div>
+          </div><!-- End Tab Content Item -->
+
+          <div class="tab-pane fade" id="features-tab-4">
+            <div class="row">
+              <div class="col-lg-6 order-2 order-lg-1 mt-3 mt-lg-0">
+                <h3>Rush Plus 道具組標準（實戰觀念佳者）</h3>
+                <ul>
+                  <li><i class="bi bi-exclamation-circle-fill"></i>
+                    <span>考生首重人品，且互動性高，平時不管在遊戲或群組皆不能潛水，給予警告後若未改善將剔除。</span>
+                  </li>
+                  <li><i class="bi bi-exclamation-circle-fill"></i>
+                    <span>考生須開麥，考試期間可以多與考官互動，有互動者，考官將會視情況予以機會。</span>
+                  </li>
+                  <li><span>道具：與隊員們進行微賽事，考官會依照考生的上位、溝通、判斷、雙吃等標準去判斷是否通過。</span></li>
+                  <li><span>若實戰考核表現不佳經考官討論後未通過者，可於三天後再次報考，若再未通過可於一週後再次報考，最多可重考三次（3天、一週、兩週後）。</span></li>
+                  <li><span>考試全程需使用語音辨識是否本人。</span></li>
+                  <li><span>入隊後隊員須請強制更名為DiviNeXXX。</span></li>
+                </ul>
+                <br><br><br>
+                <p class="fst-italic">
+                  ▪️每日台服交流<br>
+                  ▪️培養一線玩家訓練<br>
+                  ▪️舉辦北中南東隊聚維繫大家感情<br>
+                  ▪️不定時舉辦隊內活動
+                </p>
+              </div>
+              <div class="col-lg-6 order-1 order-lg-2 text-center">
+                <img src="/assets/img/MOB race/m8.jpg" alt="" class="img-fluid">
+              </div>
+            </div>
+          </div><!-- End Tab Content Item -->
+
         </div>
+
       </div>
-    </section>
+
+    </section><!-- /Features Section -->
+
   </main>
 
   <footer id="footer" class="footer dark-background">

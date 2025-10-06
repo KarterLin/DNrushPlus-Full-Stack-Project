@@ -16,13 +16,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.dnrush.entity.EventPhoto;
 import com.dnrush.entity.ImageResource;
 import com.dnrush.entity.NavigationItem;
 import com.dnrush.entity.SiteContent;
 import com.dnrush.entity.Statistic;
 import com.dnrush.entity.TeamMember;
-import com.dnrush.service.EventPhotoService;
 import com.dnrush.service.ImageService;
 import com.dnrush.service.NavigationService;
 import com.dnrush.service.SiteContentService;
@@ -46,9 +44,6 @@ public class ApiController {
     
     @Autowired
     private TeamMemberService teamMemberService;
-    
-    @Autowired
-    private EventPhotoService eventPhotoService;
     
     @Autowired
     private StatisticService statisticService;
@@ -166,32 +161,42 @@ public class ApiController {
     }
     
     @GetMapping("/team/{id}")
-    public ResponseEntity<TeamMember> getTeamMember(@PathVariable Long id) {
-        TeamMember teamMember = teamMemberService.getMemberById(id);
-        if (teamMember != null) {
-            return ResponseEntity.ok(teamMember);
-        } else {
-            return ResponseEntity.notFound().build();
+    public ResponseEntity<Map<String, Object>> getTeamMember(@PathVariable Long id) {
+        try {
+            TeamMember teamMember = teamMemberService.getMemberById(id);
+            if (teamMember != null) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("id", teamMember.getId());
+                response.put("name", teamMember.getName());
+                response.put("nickname", teamMember.getNickname());
+                response.put("position", teamMember.getPosition());
+                response.put("description", teamMember.getDescription());
+                response.put("facebookUrl", teamMember.getFacebookUrl());
+                response.put("instagramUrl", teamMember.getInstagramUrl());
+                response.put("youtubeUrl", teamMember.getYoutubeUrl());
+                response.put("githubUrl", teamMember.getGithubUrl());
+                response.put("sortOrder", teamMember.getSortOrder());
+                response.put("isActive", teamMember.getIsActive());
+                
+                // 處理頭像圖片
+                if (teamMember.getAvatarImage() != null) {
+                    Map<String, Object> avatarInfo = new HashMap<>();
+                    avatarInfo.put("id", teamMember.getAvatarImage().getId());
+                    avatarInfo.put("name", teamMember.getAvatarImage().getName());
+                    avatarInfo.put("base64Data", teamMember.getAvatarImage().getBase64Data());
+                    response.put("avatarImage", avatarInfo);
+                } else {
+                    response.put("avatarImage", null);
+                }
+                
+                return ResponseEntity.ok(response);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            logger.error("獲取團隊成員失敗: {}", e.getMessage(), e);
+            return ResponseEntity.status(500).build();
         }
-    }
-    
-    // 隊聚活動照片API
-    @GetMapping("/events")
-    public ResponseEntity<List<EventPhoto>> getEventPhotos() {
-        List<EventPhoto> eventPhotos = eventPhotoService.getActivePhotos();
-        return ResponseEntity.ok(eventPhotos);
-    }
-    
-    @GetMapping("/events/year/{year}")
-    public ResponseEntity<List<EventPhoto>> getEventPhotosByYear(@PathVariable Integer year) {
-        List<EventPhoto> eventPhotos = eventPhotoService.getPhotosByYear(year);
-        return ResponseEntity.ok(eventPhotos);
-    }
-    
-    @GetMapping("/events/years")
-    public ResponseEntity<List<Integer>> getActiveYears() {
-        List<Integer> years = eventPhotoService.getActiveYears();
-        return ResponseEntity.ok(years);
     }
     
     // 統計數據API
@@ -225,10 +230,6 @@ public class ApiController {
         
         // 團隊成員
         websiteData.put("teamMembers", teamMemberService.getActiveMembers());
-        
-        // 隊聚活動照片
-        websiteData.put("eventPhotos", eventPhotoService.getActivePhotos());
-        websiteData.put("activeYears", eventPhotoService.getActiveYears());
         
         // 圖片資源
         websiteData.put("images", imageService.getAllActiveImages());

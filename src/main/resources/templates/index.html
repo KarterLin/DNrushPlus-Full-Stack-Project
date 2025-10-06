@@ -28,6 +28,56 @@
 
   <!-- Main CSS File -->
   <link href="/assets/css/main.css" rel="stylesheet">
+
+  <!-- PHP Email Form CSS -->
+  <style>
+    .php-email-form .loading,
+    .php-email-form .error-message,
+    .php-email-form .sent-message {
+      display: none;
+    }
+
+    .php-email-form .loading {
+      color: #007bff;
+      background: #ffffff;
+      text-align: center;
+      padding: 15px;
+      border-radius: 4px;
+      margin-bottom: 15px;
+    }
+
+    .php-email-form .loading.d-block {
+      display: block !important;
+    }
+
+    .php-email-form .error-message {
+      color: #721c24;
+      background: #f8d7da;
+      text-align: center;
+      padding: 15px;
+      border-radius: 4px;
+      margin-bottom: 15px;
+      border: 1px solid #f5c6cb;
+    }
+
+    .php-email-form .error-message.d-block {
+      display: block !important;
+    }
+
+    .php-email-form .sent-message {
+      color: #155724;
+      background: #d4edda;
+      text-align: center;
+      padding: 15px;
+      border-radius: 4px;
+      margin-bottom: 15px;
+      border: 1px solid #c3e6cb;
+    }
+
+    .php-email-form .sent-message.d-block {
+      display: block !important;
+    }
+  </style>
 </head>
 
 <body class="index-page">
@@ -49,7 +99,6 @@
                <span th:text="${item.title}"></span>
             </a>
           </li>
-          <li><a href="/team-events">隊聚回顧</a></li>
         </ul>
         <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
       </nav>
@@ -363,6 +412,9 @@
                   <textarea name="message" class="form-control" rows="4" placeholder="留言內容" required></textarea>
                 </div>
                 <div class="col-md-12 text-center">
+                  <div class="loading">Loading</div>
+                  <div class="error-message"></div>
+                  <div class="sent-message">您的訊息已送出。謝謝！</div>
                   <button type="submit">提交</button>
                 </div>
                 <div class="col-md-12 text-center mt-3">
@@ -428,7 +480,7 @@
 
   <!-- Vendor JS Files -->
   <script src="/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-  <script src="/assets/vendor/php-email-form/validate.js"></script>
+  <script src="/assets/vendor/php-email-form/validate.js?v=4"></script>
   <script src="/assets/vendor/aos/aos.js"></script>
   <script src="/assets/vendor/glightbox/js/glightbox.min.js"></script>
   <script src="/assets/vendor/purecounter/purecounter_vanilla.js"></script>

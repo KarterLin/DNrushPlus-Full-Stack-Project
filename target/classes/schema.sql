@@ -101,8 +101,6 @@ CREATE TABLE IF NOT EXISTS contact_submissions (
     available_time VARCHAR(100) COMMENT '可聯繫時間',
     subject VARCHAR(255) COMMENT '主旨',
     message TEXT NOT NULL COMMENT '留言內容',
-    ip_address VARCHAR(45) COMMENT 'IP位址',
-    user_agent TEXT COMMENT '使用者代理',
     is_processed BOOLEAN DEFAULT FALSE COMMENT '是否已處理',
     processed_at TIMESTAMP NULL COMMENT '處理時間',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

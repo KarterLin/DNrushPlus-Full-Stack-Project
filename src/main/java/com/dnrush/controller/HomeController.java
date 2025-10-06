@@ -169,17 +169,4 @@ public class HomeController {
         
         return "service-details";
     }
-    
-    @GetMapping("/team-events")
-    public String teamEvents(Model model) {
-        // 導航欄資料
-        List<NavigationItem> navigationItems = navigationService.getActiveRootItems();
-        model.addAttribute("navigationItems", navigationItems);
-        
-        // 隊聚活動照片 (按年度分組)
-        List<ImageResource> eventImages = imageService.getImagesByCategory("event");
-        model.addAttribute("eventImages", eventImages);
-        
-        return "team-events";
-    }
 }

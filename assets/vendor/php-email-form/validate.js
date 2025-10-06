@@ -13,12 +13,19 @@
       event.preventDefault();
 
       let thisForm = this;
+      
+      // 防止重複提交
+      if (thisForm.classList.contains('submitting')) {
+        return;
+      }
+      thisForm.classList.add('submitting');
 
       let action = thisForm.getAttribute('action');
       let recaptcha = thisForm.getAttribute('data-recaptcha-site-key');
       
       if( ! action ) {
         displayError(thisForm, 'The form action property is not set!');
+        thisForm.classList.remove('submitting');
         return;
       }
       thisForm.querySelector('.loading').classList.add('d-block');
@@ -38,10 +45,12 @@
               })
             } catch(error) {
               displayError(thisForm, error);
+              thisForm.classList.remove('submitting');
             }
           });
         } else {
-          displayError(thisForm, 'The reCaptcha javascript API url is not loaded!')
+          displayError(thisForm, 'The reCaptcha javascript API url is not loaded!');
+          thisForm.classList.remove('submitting');
         }
       } else {
         php_email_form_submit(thisForm, action, formData);
@@ -64,6 +73,7 @@
     })
     .then(data => {
       thisForm.querySelector('.loading').classList.remove('d-block');
+      thisForm.classList.remove('submitting');
       if (data.trim() == 'OK') {
         thisForm.querySelector('.sent-message').classList.add('d-block');
         thisForm.reset(); 
@@ -73,6 +83,7 @@
     })
     .catch((error) => {
       displayError(thisForm, error);
+      thisForm.classList.remove('submitting');
     });
   }
 
@@ -80,6 +91,7 @@
     thisForm.querySelector('.loading').classList.remove('d-block');
     thisForm.querySelector('.error-message').innerHTML = error;
     thisForm.querySelector('.error-message').classList.add('d-block');
+    thisForm.classList.remove('submitting');
   }
 
 })();

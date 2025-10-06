@@ -35,17 +35,33 @@ public class ContactController {
     
     @PostMapping("/submit")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> submitContactForm(
+    public String submitContactForm(
             @RequestParam String name,
             @RequestParam String email,
-            @RequestParam(required = false) String availableTime,
+            @RequestParam(name = "available_time", required = false) String availableTime,
             @RequestParam(required = false) String subject,
             @RequestParam String message,
+            @RequestParam(required = false) String requestId,
             HttpServletRequest request) {
         
-        Map<String, Object> response = new HashMap<>();
-        
         try {
+            // 檢查是否有 requestId，沒有的話直接拒絕
+            if (requestId == null || requestId.trim().isEmpty()) {
+                System.err.println("拒絕沒有 requestId 的請求");
+                return "提交失敗：缺少請求標識符";
+            }
+            
+            // 添加日誌來追蹤請求
+            System.out.println("=== 聯絡表單提交請求 ===");
+            System.out.println("時間: " + java.time.LocalDateTime.now());
+            System.out.println("請求ID: " + requestId);
+            System.out.println("姓名: " + name);
+            System.out.println("電子郵件: " + email);
+            System.out.println("可聯繫時間: " + availableTime);
+            System.out.println("主題: " + subject);
+            System.out.println("訊息: " + message.substring(0, Math.min(50, message.length())) + "...");
+            System.out.println("=========================");
+            
             // 創建聯絡表單提交記錄
             ContactSubmission submission = new ContactSubmission();
             submission.setName(name);
@@ -53,24 +69,18 @@ public class ContactController {
             submission.setAvailableTime(availableTime);
             submission.setSubject(subject);
             submission.setMessage(message);
-            submission.setIpAddress(getClientIpAddress(request));
-            submission.setUserAgent(request.getHeader("User-Agent"));
             
             // 保存到資料庫
-            ContactSubmission savedSubmission = contactService.saveSubmission(submission);
+            ContactSubmission saved = contactService.saveSubmissionWithRequestId(submission, requestId);
+            System.out.println("成功保存提交記錄，ID: " + saved.getId());
             
-            response.put("success", true);
-            response.put("message", "已成功提交，感謝您聯絡我們DN車隊！");
-            response.put("submissionId", savedSubmission.getId());
-            
-            return ResponseEntity.ok(response);
+            // 返回 "OK" 給前端 validate.js
+            return "OK";
             
         } catch (Exception e) {
-            response.put("success", false);
-            response.put("message", "提交失敗，請稍後再試");
-            response.put("error", e.getMessage());
-            
-            return ResponseEntity.badRequest().body(response);
+            System.err.println("提交失敗: " + e.getMessage());
+            // 返回錯誤信息
+            return "提交失敗：" + e.getMessage();
         }
     }
     
@@ -126,19 +136,5 @@ public class ContactController {
         }
         
         return ResponseEntity.ok(response);
-    }
-    
-    private String getClientIpAddress(HttpServletRequest request) {
-        String xForwardedFor = request.getHeader("X-Forwarded-For");
-        if (xForwardedFor != null && !xForwardedFor.isEmpty() && !"unknown".equalsIgnoreCase(xForwardedFor)) {
-            return xForwardedFor.split(",")[0].trim();
-        }
-        
-        String xRealIp = request.getHeader("X-Real-IP");
-        if (xRealIp != null && !xRealIp.isEmpty() && !"unknown".equalsIgnoreCase(xRealIp)) {
-            return xRealIp;
-        }
-        
-        return request.getRemoteAddr();
     }
 }

@@ -49,17 +49,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/admin/events">
-                                <i class="bi bi-calendar-event"></i> 隊聚活動
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/admin/statistics">
-                                <i class="bi bi-graph-up"></i> 統計數據
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link active" href="/contact/submissions">
+                            <a class="nav-link active" href="/admin/contact-submissions">
                                 <i class="bi bi-envelope"></i> 聯絡表單
                             </a>
                         </li>
@@ -77,9 +67,9 @@
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <div class="btn-group" role="group">
-                            <button type="button" class="btn btn-outline-primary" onclick="filterSubmissions('all')">全部</button>
-                            <button type="button" class="btn btn-outline-warning" onclick="filterSubmissions('unprocessed')">未處理</button>
-                            <button type="button" class="btn btn-outline-success" onclick="filterSubmissions('processed')">已處理</button>
+                            <button type="button" class="btn btn-primary" id="filter-all" onclick="filterSubmissions('all')">全部</button>
+                            <button type="button" class="btn btn-outline-warning" id="filter-unprocessed" onclick="filterSubmissions('unprocessed')">未處理</button>
+                            <button type="button" class="btn btn-outline-success" id="filter-processed" onclick="filterSubmissions('processed')">已處理</button>
                         </div>
                     </div>
                 </div>
@@ -91,7 +81,6 @@
                             <table class="table table-hover">
                                 <thead>
                                     <tr>
-                                        <th>ID</th>
                                         <th>姓名</th>
                                         <th>Email</th>
                                         <th>主旨</th>
@@ -100,27 +89,36 @@
                                         <th>操作</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    <tr th:each="submission : ${submissions}">
-                                        <td th:text="${submission.id}">1</td>
+                                <tbody id="submissionTableBody">
+                                    <tr th:each="submission : ${submissions}" th:data-status="${submission.isProcessed ? 'processed' : 'unprocessed'}">
                                         <td th:text="${submission.name}">張三</td>
                                         <td th:text="${submission.email}">zhang@example.com</td>
                                         <td th:text="${submission.subject}">入隊申請</td>
-                                        <td th:text="${#dates.format(submission.createdAt, 'yyyy-MM-dd HH:mm')}">2024-01-01 10:00</td>
+                                        <td th:text="${#temporals.format(submission.createdAt, 'yyyy-MM-dd HH:mm')}">2024-01-01 10:00</td>
                                         <td>
                                             <span th:if="${submission.isProcessed}" class="badge bg-success">已處理</span>
                                             <span th:unless="${submission.isProcessed}" class="badge bg-warning">未處理</span>
                                         </td>
                                         <td>
-                                            <button class="btn btn-sm btn-info" onclick="viewSubmission([[${submission.id}]])">
-                                                <i class="bi bi-eye"></i> 查看
+                                            <button class="btn btn-sm btn-info me-1" 
+                                                    onclick="viewSubmission(this)"
+                                                    th:data-id="${submission.id}"
+                                                    th:data-name="${submission.name}"
+                                                    th:data-email="${submission.email}"
+                                                    th:data-available-time="${submission.availableTime}"
+                                                    th:data-subject="${submission.subject}"
+                                                    th:data-message="${submission.message}"
+                                                    th:data-created-at="${#temporals.format(submission.createdAt, 'yyyy-MM-dd HH:mm:ss')}"
+                                                    th:data-ip="${submission.ipAddress}"
+                                                    th:data-user-agent="${submission.userAgent}">
+                                                <i class="bi bi-eye"></i> 檢視
                                             </button>
                                             <button th:if="${!submission.isProcessed}" 
-                                                    class="btn btn-sm btn-success" 
-                                                    onclick="markAsProcessed([[${submission.id}]])">
+                                                    class="btn btn-sm btn-success me-1" 
+                                                    th:onclick="|markAsProcessed(${submission.id})|">
                                                 <i class="bi bi-check"></i> 標記已處理
                                             </button>
-                                            <button class="btn btn-sm btn-danger" onclick="deleteSubmission([[${submission.id}]])">
+                                            <button class="btn btn-sm btn-danger" th:onclick="|deleteSubmission(${submission.id})|">
                                                 <i class="bi bi-trash"></i> 刪除
                                             </button>
                                         </td>
@@ -134,16 +132,65 @@
         </div>
     </div>
 
-    <!-- 查看詳情Modal -->
-    <div class="modal fade" id="viewModal" tabindex="-1">
+    <!-- 檢視詳細內容模態對話框 -->
+    <div class="modal fade" id="viewModal" tabindex="-1" aria-labelledby="viewModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">聯絡表單詳情</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title" id="viewModalLabel">聯絡表單詳細內容</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
                 </div>
-                <div class="modal-body" id="submissionDetails">
-                    <!-- 詳情內容將通過JavaScript動態載入 -->
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">基本資訊</h6>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>姓名：</strong></td>
+                                    <td id="modal-name"></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Email：</strong></td>
+                                    <td id="modal-email"></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>可聯繫時間：</strong></td>
+                                    <td id="modal-available-time"></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>主旨：</strong></td>
+                                    <td id="modal-subject"></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>提交時間：</strong></td>
+                                    <td id="modal-created-at"></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted">技術資訊</h6>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>IP 位址：</strong></td>
+                                    <td id="modal-ip"></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>瀏覽器：</strong></td>
+                                    <td id="modal-user-agent" style="word-break: break-all; font-size: 0.9em;"></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6 class="text-muted">留言內容</h6>
+                            <div class="card">
+                                <div class="card-body">
+                                    <p id="modal-message" style="white-space: pre-wrap; margin-bottom: 0;"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
@@ -154,19 +201,35 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        function viewSubmission(id) {
-            // 這裡可以實作查看詳情的功能
-            // 可以通過AJAX載入詳細資訊
-            document.getElementById('submissionDetails').innerHTML = 
-                '<p>載入中...</p><p>這裡會顯示聯絡表單的詳細資訊，包括姓名、Email、留言內容等。</p>';
-            
+        function viewSubmission(button) {
+            // 從按鈕的 data 屬性獲取資料
+            const name = button.getAttribute('data-name') || '未提供';
+            const email = button.getAttribute('data-email') || '未提供';
+            const availableTime = button.getAttribute('data-available-time') || '未選擇';
+            const subject = button.getAttribute('data-subject') || '未提供';
+            const message = button.getAttribute('data-message') || '無留言';
+            const createdAt = button.getAttribute('data-created-at') || '未知';
+            const ip = button.getAttribute('data-ip') || '未知';
+            const userAgent = button.getAttribute('data-user-agent') || '未知';
+
+            // 填入模態對話框
+            document.getElementById('modal-name').textContent = name;
+            document.getElementById('modal-email').textContent = email;
+            document.getElementById('modal-available-time').textContent = availableTime;
+            document.getElementById('modal-subject').textContent = subject;
+            document.getElementById('modal-message').textContent = message;
+            document.getElementById('modal-created-at').textContent = createdAt;
+            document.getElementById('modal-ip').textContent = ip;
+            document.getElementById('modal-user-agent').textContent = userAgent;
+
+            // 顯示模態對話框
             const modal = new bootstrap.Modal(document.getElementById('viewModal'));
             modal.show();
         }
 
         function markAsProcessed(id) {
             if (confirm('確定要標記為已處理嗎？')) {
-                fetch('/contact/mark-processed/' + id, {
+                fetch('/admin/contact/mark-processed/' + id, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -190,7 +253,7 @@
 
         function deleteSubmission(id) {
             if (confirm('確定要刪除這筆聯絡表單嗎？此操作無法復原。')) {
-                fetch('/contact/delete/' + id, {
+                fetch('/admin/contact/delete/' + id, {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
@@ -213,10 +276,62 @@
         }
 
         function filterSubmissions(type) {
-            // 這裡可以實作篩選功能
-            console.log('篩選類型：', type);
-            // 可以通過AJAX重新載入表格資料
+            // 獲取所有表格行
+            const tableBody = document.getElementById('submissionTableBody');
+            const rows = tableBody.querySelectorAll('tr');
+            
+            // 更新按鈕狀態
+            document.querySelectorAll('.btn-group button').forEach(btn => {
+                btn.classList.remove('btn-primary', 'btn-warning', 'btn-success');
+                btn.classList.add('btn-outline-primary', 'btn-outline-warning', 'btn-outline-success');
+            });
+            
+            // 設置當前選中按鈕的狀態
+            const currentBtn = document.getElementById('filter-' + type);
+            if (currentBtn) {
+                currentBtn.classList.remove('btn-outline-primary', 'btn-outline-warning', 'btn-outline-success');
+                if (type === 'all') {
+                    currentBtn.classList.add('btn-primary');
+                } else if (type === 'unprocessed') {
+                    currentBtn.classList.add('btn-warning');
+                } else if (type === 'processed') {
+                    currentBtn.classList.add('btn-success');
+                }
+            }
+            
+            // 篩選表格行
+            rows.forEach(row => {
+                const status = row.getAttribute('data-status');
+                if (type === 'all') {
+                    row.style.display = '';
+                } else if (type === status) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            // 更新計數
+            updateFilterCounts();
         }
+        
+        function updateFilterCounts() {
+            const tableBody = document.getElementById('submissionTableBody');
+            const allRows = tableBody.querySelectorAll('tr');
+            const visibleRows = tableBody.querySelectorAll('tr[style=""], tr:not([style])');
+            const processedRows = tableBody.querySelectorAll('tr[data-status="processed"]');
+            const unprocessedRows = tableBody.querySelectorAll('tr[data-status="unprocessed"]');
+            
+            // 更新按鈕文字顯示計數
+            document.getElementById('filter-all').innerHTML = '全部 (' + allRows.length + ')';
+            document.getElementById('filter-unprocessed').innerHTML = '未處理 (' + unprocessedRows.length + ')';
+            document.getElementById('filter-processed').innerHTML = '已處理 (' + processedRows.length + ')';
+        }
+        
+        // 頁面載入時初始化計數
+        document.addEventListener('DOMContentLoaded', function() {
+            updateFilterCounts();
+        });
     </script>
 </body>
 </html>

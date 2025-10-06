@@ -1,6 +1,5 @@
 package com.dnrush.controller;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,7 +12,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,18 +20,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.dnrush.entity.EventPhoto;
 import com.dnrush.entity.ImageResource;
 import com.dnrush.entity.NavigationItem;
 import com.dnrush.entity.SiteContent;
-import com.dnrush.entity.Statistic;
 import com.dnrush.entity.TeamMember;
-import com.dnrush.service.EventPhotoService;
+import com.dnrush.entity.ContactSubmission;
 import com.dnrush.service.ImageService;
 import com.dnrush.service.NavigationService;
 import com.dnrush.service.SiteContentService;
-import com.dnrush.service.StatisticService;
 import com.dnrush.service.TeamMemberService;
+import com.dnrush.service.ContactService;
 
 @Controller
 @RequestMapping("/admin")
@@ -54,10 +50,7 @@ public class AdminController {
     private TeamMemberService teamMemberService;
     
     @Autowired
-    private EventPhotoService eventPhotoService;
-    
-    @Autowired
-    private StatisticService statisticService;
+    private ContactService contactService;
     
     // 管理首頁
     @GetMapping
@@ -371,40 +364,113 @@ public class AdminController {
     
     @PostMapping("/team")
     @ResponseBody
-    public String saveTeamMember(@ModelAttribute TeamMember teamMember) {
-        teamMemberService.saveMember(teamMember);
-        return "success";
+    public String saveTeamMember(@RequestParam("name") String name,
+                                @RequestParam("position") String position,
+                                @RequestParam(value = "facebookUrl", required = false) String facebookUrl,
+                                @RequestParam(value = "instagramUrl", required = false) String instagramUrl,
+                                @RequestParam(value = "youtubeUrl", required = false) String youtubeUrl,
+                                @RequestParam(value = "githubUrl", required = false) String githubUrl,
+                                @RequestParam(value = "description", required = false) String description,
+                                @RequestParam(value = "sortOrder", required = false, defaultValue = "0") Integer sortOrder,
+                                @RequestParam(value = "avatar", required = false) MultipartFile avatarFile,
+                                @RequestParam(value = "id", required = false) Long id) {
+        try {
+            TeamMember teamMember;
+            if (id != null && id > 0) {
+                teamMember = teamMemberService.getMemberById(id);
+                if (teamMember == null) {
+                    return "error: 找不到指定的團隊成員";
+                }
+            } else {
+                teamMember = new TeamMember();
+            }
+            
+            teamMember.setName(name);
+            teamMember.setPosition(position);
+            teamMember.setFacebookUrl(facebookUrl);
+            teamMember.setInstagramUrl(instagramUrl);
+            teamMember.setYoutubeUrl(youtubeUrl);
+            teamMember.setGithubUrl(githubUrl);
+            teamMember.setDescription(description);
+            teamMember.setSortOrder(sortOrder);
+            
+            // 處理頭像上傳
+            if (avatarFile != null && !avatarFile.isEmpty()) {
+                teamMemberService.saveTeamMemberWithAvatar(teamMember, avatarFile);
+            } else {
+                teamMemberService.saveMember(teamMember);
+            }
+            
+            return "success";
+        } catch (Exception e) {
+            logger.error("保存團隊成員失敗", e);
+            return "error: " + e.getMessage();
+        }
     }
     
-    // 隊聚活動照片管理
-    @GetMapping("/events")
-    public String eventManagement(Model model) {
-        List<EventPhoto> eventPhotos = eventPhotoService.getActivePhotos();
-        List<Integer> activeYears = eventPhotoService.getActiveYears();
-        model.addAttribute("eventPhotos", eventPhotos);
-        model.addAttribute("activeYears", activeYears);
-        return "admin/events";
-    }
-    
-    @PostMapping("/events")
+    @DeleteMapping("/team/{id}")
     @ResponseBody
-    public String saveEventPhoto(@ModelAttribute EventPhoto eventPhoto) {
-        eventPhotoService.savePhoto(eventPhoto);
-        return "success";
+    public String deleteTeamMember(@PathVariable Long id) {
+        try {
+            teamMemberService.deleteMember(id);
+            return "success";
+        } catch (Exception e) {
+            logger.error("刪除團隊成員失敗", e);
+            return "error: " + e.getMessage();
+        }
     }
     
-    // 統計數據管理
-    @GetMapping("/statistics")
-    public String statisticsManagement(Model model) {
-        List<Statistic> statistics = statisticService.getActiveStatistics();
-        model.addAttribute("statistics", statistics);
-        return "admin/statistics";
+    // 聯絡表單管理
+    @GetMapping("/contact-submissions")
+    public String contactSubmissions(Model model) {
+        try {
+            List<ContactSubmission> submissions = contactService.getAllSubmissions();
+            model.addAttribute("submissions", submissions);
+            return "admin/contact-submissions";
+        } catch (Exception e) {
+            logger.error("Error loading contact submissions", e);
+            return "redirect:/admin?error=load-failed";
+        }
     }
     
-    @PostMapping("/statistics")
+    @PostMapping("/contact/mark-processed/{id}")
     @ResponseBody
-    public String saveStatistic(@ModelAttribute Statistic statistic) {
-        statisticService.saveStatistic(statistic);
-        return "success";
+    public ResponseEntity<Map<String, Object>> markAsProcessed(@PathVariable Long id) {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            ContactSubmission submission = contactService.markAsProcessed(id);
+            if (submission != null) {
+                response.put("success", true);
+                response.put("message", "已標記為已處理");
+            } else {
+                response.put("success", false);
+                response.put("message", "找不到該提交記錄");
+            }
+        } catch (Exception e) {
+            logger.error("Error marking submission as processed", e);
+            response.put("success", false);
+            response.put("message", "處理失敗");
+        }
+        
+        return ResponseEntity.ok(response);
+    }
+    
+    @DeleteMapping("/contact/delete/{id}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> deleteContactSubmission(@PathVariable Long id) {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            contactService.deleteSubmission(id);
+            response.put("success", true);
+            response.put("message", "已刪除提交記錄");
+        } catch (Exception e) {
+            logger.error("Error deleting submission", e);
+            response.put("success", false);
+            response.put("message", "刪除失敗");
+        }
+        
+        return ResponseEntity.ok(response);
     }
 }
