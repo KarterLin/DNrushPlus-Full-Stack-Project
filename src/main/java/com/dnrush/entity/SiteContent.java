@@ -2,6 +2,8 @@ package com.dnrush.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 @Entity
 @Table(name = "site_contents")
@@ -41,7 +43,7 @@ public class SiteContent {
     private LocalDateTime updatedAt;
     
     public enum ContentType {
-        TEXT, HTML, MARKDOWN
+        TEXT
     }
     
     @PrePersist
@@ -143,5 +145,20 @@ public class SiteContent {
     
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public Map<String, Object> toMap() {
+        Map<String, Object> map = new HashMap<>();
+        map.put("id", id);
+        map.put("contentKey", contentKey);
+        map.put("title", title);
+        map.put("content", content);
+        map.put("contentType", contentType != null ? contentType.name() : null);
+        map.put("section", section);
+        map.put("sortOrder", sortOrder);
+        map.put("isActive", isActive);
+        map.put("createdAt", createdAt != null ? createdAt.toString() : null);
+        map.put("updatedAt", updatedAt != null ? updatedAt.toString() : null);
+        return map;
     }
 }

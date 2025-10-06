@@ -124,11 +124,7 @@ public class AdminController {
             // 解析 sort_order
             String sortOrderStr = requestBody.get("sortOrder") != null ? 
                 requestBody.get("sortOrder").toString() : "0";
-            try {
-                navigationItem.setSortOrder(Integer.parseInt(sortOrderStr));
-            } catch (NumberFormatException e) {
-                navigationItem.setSortOrder(0);
-            }
+            navigationItem.setSortOrder(Integer.valueOf(sortOrderStr));
             
             // 解析 is_active
             Object isActiveObj = requestBody.get("isActive");
@@ -183,7 +179,11 @@ public class AdminController {
             logger.debug("Deleting navigation item with id: {}", id);
             navigationService.deleteNavigationItem(id);
             return ResponseEntity.ok(Map.of("success", true, "message", "導航欄項目刪除成功"));
-        } catch (Exception e) {
+        } catch (IllegalArgumentException e) {
+            logger.error("Invalid navigation item id: {}", id, e);
+            return ResponseEntity.badRequest()
+                .body(Map.of("success", false, "message", "無效的導航欄項目ID"));
+        } catch (RuntimeException e) {
             logger.error("Error deleting navigation item with id: {}", id, e);
             return ResponseEntity.status(500)
                 .body(Map.of("success", false, "message", "刪除時發生錯誤: " + e.getMessage()));
@@ -200,16 +200,53 @@ public class AdminController {
     
     @PostMapping("/content")
     @ResponseBody
-    public String saveContent(@ModelAttribute SiteContent siteContent) {
-        siteContentService.saveContent(siteContent);
-        return "success";
+    public Map<String, Object> saveContent(@RequestBody SiteContent siteContent) {
+        try {
+            siteContentService.saveContent(siteContent);
+            return Map.of("success", true, "message", "內容儲存成功");
+        } catch (IllegalArgumentException e) {
+            logger.error("Invalid content data", e);
+            return Map.of("success", false, "message", "無效的內容數據: " + e.getMessage());
+        } catch (RuntimeException e) {
+            logger.error("Error saving content", e);
+            return Map.of("success", false, "message", "儲存失敗: " + e.getMessage());
+        }
     }
-    
-    @PostMapping("/content/update")
+
+    @GetMapping("/content/{id}")
     @ResponseBody
-    public String updateContent(@RequestParam String contentKey, @RequestParam String content) {
-        siteContentService.updateContent(contentKey, content);
-        return "success";
+    public ResponseEntity<?> getContent(@PathVariable Long id) {
+        try {
+            logger.debug("Getting content with id: {}", id);
+            SiteContent content = siteContentService.getContentById(id);
+            if (content != null) {
+                return ResponseEntity.ok(content.toMap());
+            }
+            return ResponseEntity.status(404).body(Map.of("message", "找不到指定的內容"));
+        } catch (IllegalArgumentException e) {
+            logger.error("Invalid content id: {}", id, e);
+            return ResponseEntity.badRequest().body(Map.of("message", "無效的內容ID"));
+        } catch (RuntimeException e) {
+            logger.error("Error getting content with id: {}", id, e);
+            return ResponseEntity.status(500).body(Map.of("message", "獲取內容時發生錯誤: " + e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/content/{id}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> deleteContent(@PathVariable Long id) {
+        try {
+            siteContentService.deleteContent(id);
+            return ResponseEntity.ok(Map.of("success", true, "message", "內容刪除成功"));
+        } catch (IllegalArgumentException e) {
+            logger.error("Invalid content id: {}", id, e);
+            return ResponseEntity.badRequest()
+                .body(Map.of("success", false, "message", "無效的內容ID"));
+        } catch (RuntimeException e) {
+            logger.error("Error deleting content with id: {}", id, e);
+            return ResponseEntity.status(500)
+                .body(Map.of("success", false, "message", "刪除失敗: " + e.getMessage()));
+        }
     }
     
     // 圖片管理

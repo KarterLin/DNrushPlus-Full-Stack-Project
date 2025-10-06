@@ -8,7 +8,7 @@
     <!-- Bootstrap CSS -->
     <link href="/assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="/assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
-    
+
     <!-- Custom styles -->
     <style>
         .sidebar {
@@ -104,11 +104,6 @@
             <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                     <h1 class="h2">網站內容管理</h1>
-                    <div class="btn-toolbar mb-2 mb-md-0">
-                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addContentModal">
-                            <i class="bi bi-plus"></i> 新增內容
-                        </button>
-                    </div>
                 </div>
 
                 <!-- 內容列表 -->
@@ -157,12 +152,12 @@
         </div>
     </div>
 
-    <!-- 新增/編輯內容的Modal -->
+    <!-- 編輯內容的Modal -->
     <div class="modal fade" id="addContentModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">網站內容</h5>
+                    <h5 class="modal-title">編輯內容</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -173,16 +168,12 @@
                             <input type="text" class="form-control" id="title" name="title" required>
                         </div>
                         <div class="mb-3">
-                            <label for="contentKey" class="form-label">Key</label>
-                            <input type="text" class="form-control" id="contentKey" name="contentKey" required>
+                            <label for="contentKey" class="form-label">內容識別碼 (Key)</label>
+                            <input type="text" class="form-control" id="contentKey" name="contentKey" required readonly>
                         </div>
                         <div class="mb-3">
                             <label for="contentType" class="form-label">類型</label>
-                            <select class="form-select" id="contentType" name="contentType" required>
-                                <option value="TEXT">一般文字</option>
-                                <option value="HTML">HTML</option>
-                                <option value="MARKDOWN">Markdown</option>
-                            </select>
+                            <input type="text" class="form-control" id="contentType" name="contentType" required readonly>
                         </div>
                         <div class="mb-3">
                             <label for="content" class="form-label">內容</label>
@@ -203,55 +194,120 @@
     
     <!-- Custom JavaScript -->
     <script>
+
         function editContent(id) {
             // 載入數據到表單
-            fetch(`/api/content/${id}`)
-                .then(response => response.json())
+            fetch(`/admin/content/${id}`)
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(data => {
+                            throw new Error(data.message || '載入數據失敗');
+                        });
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     document.getElementById('contentId').value = data.id;
                     document.getElementById('title').value = data.title;
                     document.getElementById('contentKey').value = data.contentKey;
                     document.getElementById('contentType').value = data.contentType;
-                    document.getElementById('content').value = data.content;
+                    document.getElementById('content').value = data.content || '';
+                    
+                    // 更新 Modal 標題
+                    document.querySelector('#addContentModal .modal-title').textContent = '編輯網站內容';
                     
                     // 顯示Modal
                     new bootstrap.Modal(document.getElementById('addContentModal')).show();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('載入數據失敗: ' + error.message);
                 });
         }
 
-        function saveContent() {
-            const formData = new FormData(document.getElementById('contentForm'));
-            const data = Object.fromEntries(formData.entries());
+            function saveContent() {
+            const form = document.getElementById('contentForm');
+            const contentId = form.querySelector('#contentId').value;
+            if (!contentId) {
+                alert('無效的操作');
+                return;
+            }
             
+            const data = {
+                id: contentId,
+                title: form.querySelector('#title').value,
+                contentKey: form.querySelector('#contentKey').value,
+                contentType: form.querySelector('#contentType').value,
+                content: form.querySelector('#content').value,
+                isActive: true
+            };            // 在發送請求前先顯示保存中的提示
+            const saveButton = document.querySelector('#addContentModal .btn-primary');
+            const originalText = saveButton.textContent;
+            saveButton.textContent = '保存中...';
+            saveButton.disabled = true;
+
             fetch('/admin/content', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json'
                 },
                 body: JSON.stringify(data)
             })
-            .then(response => response.text())
-            .then(result => {
-                if (result === 'success') {
+            .then(async response => {
+                const responseData = await response.json();
+                if (!response.ok) {
+                    throw new Error(responseData.message || responseData.error || '保存失敗');
+                }
+                return responseData;
+            })
+            .then(data => {
+                if (data.success) {
+                    // 顯示成功消息
+                    alert('保存成功！');
                     location.reload();
                 } else {
-                    alert('保存失敗');
+                    throw new Error(data.message || '保存失敗');
                 }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // 顯示詳細的錯誤信息
+                alert('保存失敗:\n' + error.message + '\n\n如果問題持續存在，請檢查：\n1. 內容識別碼(Key)是否重複\n2. 所有必填欄位是否都已填寫\n3. 內容長度是否在允許範圍內');
+            })
+            .finally(() => {
+                // 恢復按鈕狀態
+                saveButton.textContent = originalText;
+                saveButton.disabled = false;
             });
         }
 
         function deleteContent(id) {
             if (confirm('確定要刪除這個內容嗎？')) {
                 fetch(`/admin/content/${id}`, {
-                    method: 'DELETE'
+                    method: 'DELETE',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
                 })
-                .then(response => response.text())
-                .then(result => {
-                    if (result === 'success') {
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(data => {
+                            throw new Error(data.message || '刪除失敗');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
                         location.reload();
                     } else {
-                        alert('刪除失敗');
+                        throw new Error(data.message || '刪除失敗');
                     }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('刪除失敗: ' + error.message);
                 });
             }
         }
