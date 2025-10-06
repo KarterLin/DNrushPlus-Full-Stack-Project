@@ -63,7 +63,6 @@ src/
 ### 1. 動態導航欄
 - 支援多層級導航結構
 - 後端控制導航內容
-- 支援下拉選單
 
 ### 2. 圖片Base64處理
 - 圖片上傳自動轉換為Base64
@@ -129,7 +128,6 @@ mvn spring-boot:run
 - `GET /api/content/{contentKey}` - 獲取網站內容
 - `GET /api/images/category/{category}` - 獲取分類圖片
 - `GET /api/team` - 獲取團隊成員
-- `GET /api/images/event/more` - 載入更多隊聚活動照片
 
 ### 後台API
 - `POST /contact/submit` - 提交聯絡表單
@@ -199,7 +197,7 @@ String content = siteContentService.getContentValue("content_key");
 
 ## 聯絡資訊
 
-- 專案維護者: DN車隊開發團隊
+- 專案維護者: Karter Lin
 - Email: bgca0610@gmail.com
 - 網站: [DN車隊官方網站](http://localhost:8080)
 
