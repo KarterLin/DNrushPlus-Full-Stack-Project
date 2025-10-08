@@ -74,14 +74,22 @@ public class TeamMemberService {
         try {
             TeamMember member = getMemberById(id);
             if (member != null) {
-                // 如果有頭像，也要刪除對應的圖片
+                // 先保存頭像圖片的ID（如果存在）
+                Long avatarImageId = null;
                 if (member.getAvatarImage() != null) {
-                    imageService.deleteImage(member.getAvatarImage().getId());
+                    avatarImageId = member.getAvatarImage().getId();
+                    // 先移除對頭像的引用
+                    member.setAvatarImage(null);
                 }
                 
                 // 軟刪除：設置為非活躍狀態
                 member.setIsActive(false);
                 teamMemberRepository.save(member);
+                
+                // 現在可以安全地刪除頭像圖片了
+                if (avatarImageId != null) {
+                    imageService.deleteImage(avatarImageId);
+                }
             }
         } catch (Exception e) {
             logger.error("刪除團隊成員失敗: {}", e.getMessage(), e);
