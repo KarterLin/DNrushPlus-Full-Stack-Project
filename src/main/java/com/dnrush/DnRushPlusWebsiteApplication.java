@@ -11,3 +11,9 @@ public class DnRushPlusWebsiteApplication {
     }
 
 }
+// karter note:
+// 如果8080被占用:
+// netstat -ano | findstr :8080   
+// 找到pid後:
+// tasklist | findstr <pid>     <刪除PID
+// taskkill /F /PID <pid>        <刪除先前運行的spring boot 應用
