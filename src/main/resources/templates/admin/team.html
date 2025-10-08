@@ -157,16 +157,16 @@
                                 <h5 class="card-title" th:text="${member.name}">呆虎(虎哥)</h5>
                                 <p class="card-text" th:text="${member.position}">車隊總負責人</p>
                                 <div class="social-links">
-                                    <a th:if="${member.facebookUrl != null}" th:href="${member.facebookUrl}" target="_blank">
+                                    <a th:if="${member.facebookUrl != null and !#strings.isEmpty(member.facebookUrl)}" th:href="${member.facebookUrl}" target="_blank">
                                         <i class="bi bi-facebook"></i>
                                     </a>
-                                    <a th:if="${member.instagramUrl != null}" th:href="${member.instagramUrl}" target="_blank">
+                                    <a th:if="${member.instagramUrl != null and !#strings.isEmpty(member.instagramUrl)}" th:href="${member.instagramUrl}" target="_blank">
                                         <i class="bi bi-instagram"></i>
                                     </a>
-                                    <a th:if="${member.youtubeUrl != null}" th:href="${member.youtubeUrl}" target="_blank">
+                                    <a th:if="${member.youtubeUrl != null and !#strings.isEmpty(member.youtubeUrl)}" th:href="${member.youtubeUrl}" target="_blank">
                                         <i class="bi bi-youtube"></i>
                                     </a>
-                                    <a th:if="${member.githubUrl != null}" th:href="${member.githubUrl}" target="_blank">
+                                    <a th:if="${member.githubUrl != null and !#strings.isEmpty(member.githubUrl)}" th:href="${member.githubUrl}" target="_blank">
                                         <i class="bi bi-github"></i>
                                     </a>
                                 </div>

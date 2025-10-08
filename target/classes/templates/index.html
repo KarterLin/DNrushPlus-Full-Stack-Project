@@ -266,16 +266,16 @@
                 <h4 th:text="${member.name}">呆虎(虎哥)</h4>
                 <span th:text="${member.position}">車隊總負責人</span>
                 <div class="social">
-                  <a th:href="${member.facebookUrl}" target="_blank" th:if="${member.facebookUrl != null}">
+                  <a th:href="${member.facebookUrl}" target="_blank" th:if="${member.facebookUrl != null and !#strings.isEmpty(member.facebookUrl)}">
                     <i class="bi bi-facebook"></i>
                   </a>
-                  <a th:href="${member.instagramUrl}" target="_blank" th:if="${member.instagramUrl != null}">
+                  <a th:href="${member.instagramUrl}" target="_blank" th:if="${member.instagramUrl != null and !#strings.isEmpty(member.instagramUrl)}">
                     <i class="bi bi-instagram"></i>
                   </a>
-                  <a th:href="${member.youtubeUrl}" target="_blank" th:if="${member.youtubeUrl != null}">
+                  <a th:href="${member.youtubeUrl}" target="_blank" th:if="${member.youtubeUrl != null and !#strings.isEmpty(member.youtubeUrl)}">
                     <i class="bi bi-youtube"></i>
                   </a>
-                  <a th:href="${member.githubUrl}" target="_blank" th:if="${member.githubUrl != null}">
+                  <a th:href="${member.githubUrl}" target="_blank" th:if="${member.githubUrl != null and !#strings.isEmpty(member.githubUrl)}">
                     <i class="bi bi-github"></i>
                   </a>
                 </div>
