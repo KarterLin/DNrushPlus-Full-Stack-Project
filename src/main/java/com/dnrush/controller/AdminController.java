@@ -20,16 +20,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.dnrush.entity.ContactSubmission;
 import com.dnrush.entity.ImageResource;
 import com.dnrush.entity.NavigationItem;
 import com.dnrush.entity.SiteContent;
 import com.dnrush.entity.TeamMember;
-import com.dnrush.entity.ContactSubmission;
+import com.dnrush.service.ContactService;
 import com.dnrush.service.ImageService;
 import com.dnrush.service.NavigationService;
 import com.dnrush.service.SiteContentService;
 import com.dnrush.service.TeamMemberService;
-import com.dnrush.service.ContactService;
 
 @Controller
 @RequestMapping("/admin")
@@ -179,6 +179,10 @@ public class AdminController {
                 return ResponseEntity.status(500)
                     .body(Map.of("success", false, "message", "儲存導航欄項目失敗"));
             }
+        } catch (IllegalArgumentException e) {
+            logger.error("Invalid navigation item data", e);
+            return ResponseEntity.status(400)
+                .body(Map.of("success", false, "message", "導航欄項目資料錯誤: " + e.getMessage()));
         } catch (Exception e) {
             logger.error("Error saving navigation item", e);
             return ResponseEntity.status(500)
@@ -316,12 +320,12 @@ public class AdminController {
         try {
             Integer yearValue = null;
             if (year != null && !year.isEmpty()) {
-                yearValue = Integer.parseInt(year);
+                yearValue = Integer.valueOf(year);
             }
             
             // 如果有 id 參數，表示是更新操作
             if (id != null && !id.isEmpty()) {
-                Long imageId = Long.parseLong(id);
+                Long imageId = Long.valueOf(id);
                 imageService.updateImage(imageId, file, category, description, yearValue);
             } else {
                 // 新增操作 - 檔案必須存在
@@ -331,6 +335,12 @@ public class AdminController {
                 imageService.saveImage(file, category, description, yearValue);
             }
             return "success";
+        } catch (NumberFormatException e) {
+            logger.error("Invalid number format", e);
+            return "error: 數字格式錯誤";
+        } catch (IllegalArgumentException e) {
+            logger.error("Invalid argument", e);
+            return "error: 參數錯誤";
         } catch (Exception e) {
             logger.error("Error processing image", e);
             return "error: " + e.getMessage();
@@ -346,7 +356,11 @@ public class AdminController {
         try {
             imageService.updateImage(id, file, category, description);
             return "success";
+        } catch (IllegalArgumentException e) {
+            logger.error("Invalid argument for image update", e);
+            return "error: 參數錯誤";
         } catch (Exception e) {
+            logger.error("Error updating image", e);
             return "error: " + e.getMessage();
         }
     }
@@ -357,7 +371,11 @@ public class AdminController {
         try {
             imageService.deleteImage(id);
             return "success";
+        } catch (IllegalArgumentException e) {
+            logger.error("Invalid argument for image deletion", e);
+            return "error: 參數錯誤";
         } catch (Exception e) {
+            logger.error("Error deleting image", e);
             return "error: " + e.getMessage();
         }
     }
@@ -371,7 +389,13 @@ public class AdminController {
             response.put("canDelete", canDelete);
             response.put("year", year);
             return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            logger.error("Invalid year parameter", e);
+            Map<String, Object> response = new HashMap<>();
+            response.put("error", "年份參數錯誤");
+            return ResponseEntity.status(400).body(response);
         } catch (Exception e) {
+            logger.error("Error checking year deletion status", e);
             Map<String, Object> response = new HashMap<>();
             response.put("error", e.getMessage());
             return ResponseEntity.status(500).body(response);

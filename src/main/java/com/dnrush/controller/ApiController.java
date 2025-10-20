@@ -87,7 +87,8 @@ public class ApiController {
                 response.put("description", image.getDescription() != null ? image.getDescription() : "");
                 response.put("year", image.getYear());
                 response.put("mimeType", image.getMimeType() != null ? image.getMimeType() : "");
-                response.put("fileSize", image.getFileSize() != null ? image.getFileSize().longValue() : 0L);
+                Long fileSize = image.getFileSize();
+                response.put("fileSize", fileSize != null ? fileSize : 0L);
                 response.put("createdAt", image.getCreatedAt() != null ? image.getCreatedAt().toString() : "");
                 return ResponseEntity.ok(response);
             } else {
@@ -227,28 +228,30 @@ public class ApiController {
         try {
             List<ImageResource> images;
             
-            // 請求比 limit 多 1 個來檢查是否還有更多數據
-            int checkLimit = limit + 1;
-            
             if (category != null && !category.trim().isEmpty()) {
                 if (year != null && !year.trim().isEmpty()) {
-                    images = imageService.getImagesByCategoryAndYearPaginated(category, year, offset, checkLimit);
+                    Integer yearValue = Integer.valueOf(year);
+                    images = imageService.getImagesByCategoryAndYear(category, yearValue);
                 } else {
-                    images = imageService.getImagesByCategoryPaginated(category, offset, checkLimit);
+                    images = imageService.getImagesByCategory(category);
                 }
             } else if (year != null && !year.trim().isEmpty()) {
-                images = imageService.getImagesByYearPaginated(year, offset, checkLimit);
+                Integer yearValue = Integer.valueOf(year);
+                images = imageService.getImagesByYear(yearValue);
             } else {
-                images = imageService.getAllImagesPaginated(offset, checkLimit);
+                images = imageService.getAllImages();
             }
+            
+            // 應用手動分頁
+            int totalSize = images.size();
+            int fromIndex = Math.min(offset, totalSize);
+            int toIndex = Math.min(offset + limit, totalSize);
             
             // 檢查是否有更多數據
-            boolean hasMore = images.size() > limit;
+            boolean hasMore = toIndex < totalSize;
             
-            // 只返回請求的數量
-            if (hasMore) {
-                images = images.subList(0, limit);
-            }
+            // 獲取當前頁的資料
+            images = images.subList(fromIndex, toIndex);
             
             // 優化數據傳輸 - 使用更小的批次大小和完整數據
             List<Map<String, Object>> optimizedImages = new ArrayList<>();
@@ -271,7 +274,13 @@ public class ApiController {
             response.put("hasMore", hasMore);
             response.put("status", "success");
             
+        } catch (IllegalArgumentException e) {
+            logger.error("Invalid pagination parameters", e);
+            response.put("status", "error");
+            response.put("message", "分頁參數錯誤: " + e.getMessage());
+            return ResponseEntity.status(400).body(response);
         } catch (Exception e) {
+            logger.error("Error loading images", e);
             response.put("status", "error");
             response.put("message", "載入圖片時發生錯誤: " + e.getMessage());
             return ResponseEntity.status(500).body(response);

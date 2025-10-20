@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-DnRushPlusWebsiteApplication<dnrush-plus-website>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.dnrush.DnRushPlusWebsiteApplication",
+            "projectName": "dnrush-plus-website",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

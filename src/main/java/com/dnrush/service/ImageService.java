@@ -1,7 +1,14 @@
 package com.dnrush.service;
 
-import com.dnrush.entity.ImageResource;
-import com.dnrush.repository.ImageResourceRepository;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.UUID;
+
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,12 +16,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
-import java.util.UUID;
+import com.dnrush.entity.ImageResource;
+import com.dnrush.repository.ImageResourceRepository;
 
 @Service
 public class ImageService {
@@ -28,10 +31,6 @@ public class ImageService {
     @Value("${app.image.base64.prefix:data:image/jpeg;base64,}")
     private String base64Prefix;
     
-    public List<ImageResource> getImagesByCategory(String category) {
-        return imageResourceRepository.findActiveByCategory(category);
-    }
-    
     public List<ImageResource> getAllActiveImages() {
         return imageResourceRepository.findByIsActiveTrueOrderByCreatedAtDesc();
     }
@@ -43,8 +42,6 @@ public class ImageService {
     public ImageResource getImageByName(String name) {
         return imageResourceRepository.findByNameAndIsActiveTrue(name).orElse(null);
     }
-    
-
     
     public ImageResource saveImage(MultipartFile file, String category, String description) throws IOException {
         return saveImage(file, category, description, null);
@@ -124,12 +121,7 @@ public class ImageService {
         // 這個方法主要是為了一致性，實際上年份會在沒有相關照片時自動消失
     }
     
-    public List<ImageResource> getImagesByCategoryAndYear(String category, Integer year) {
-        if (year == null) {
-            return imageResourceRepository.findActiveByCategory(category);
-        }
-        return imageResourceRepository.findActiveByCategoryAndYear(category, year);
-    }
+
     
     public ImageResource updateImage(Long id, MultipartFile file, String category, String description) throws IOException {
         return updateImage(id, file, category, description, null);
@@ -198,21 +190,24 @@ public class ImageService {
         }
     }
     
-    // 分頁方法
-    public List<ImageResource> getAllImagesPaginated(int offset, int limit) {
-        return imageResourceRepository.findByStatusOrderByYearDescCreatedAtDescWithPagination(true, offset, limit);
+    // 查詢方法
+    public List<ImageResource> getAllImages() {
+        return imageResourceRepository.findByStatusOrderByYearDescCreatedAtDesc(true);
     }
     
-    public List<ImageResource> getImagesByCategoryPaginated(String category, int offset, int limit) {
-        return imageResourceRepository.findByCategoryAndStatusOrderByYearDescCreatedAtDescWithPagination(category, true, offset, limit);
+    public List<ImageResource> getImagesByCategory(String category) {
+        return imageResourceRepository.findByCategoryAndStatusOrderByYearDescCreatedAtDesc(category, true);
     }
     
-    public List<ImageResource> getImagesByYearPaginated(String year, int offset, int limit) {
-        return imageResourceRepository.findByYearAndStatusOrderByCreatedAtDescWithPagination(year, true, offset, limit);
+    public List<ImageResource> getImagesByYear(Integer year) {
+        return imageResourceRepository.findByYearAndStatusOrderByCreatedAtDesc(year, true);
     }
     
-    public List<ImageResource> getImagesByCategoryAndYearPaginated(String category, String year, int offset, int limit) {
-        return imageResourceRepository.findByCategoryAndYearAndStatusOrderByCreatedAtDescWithPagination(category, year, true, offset, limit);
+    public List<ImageResource> getImagesByCategoryAndYear(String category, Integer year) {
+        if (year == null) {
+            return getImagesByCategory(category);
+        }
+        return imageResourceRepository.findByCategoryAndYearAndStatusOrderByCreatedAtDesc(category, year, true);
     }
     
     // 專門為 TeamMemberService 提供的 ImageResource 保存方法
