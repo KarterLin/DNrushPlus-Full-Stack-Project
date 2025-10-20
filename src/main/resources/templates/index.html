@@ -77,6 +77,46 @@
     .php-email-form .sent-message.d-block {
       display: block !important;
     }
+
+    /* 用戶認證區域樣式 */
+    .user-auth-area {
+      margin-left: 20px;
+    }
+
+    .user-auth-area .btn {
+      border-radius: 20px;
+      padding: 8px 16px;
+      font-size: 14px;
+    }
+
+    .user-auth-area .dropdown-toggle::after {
+      margin-left: 8px;
+    }
+
+    .user-auth-area img {
+      border: 2px solid #fff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .user-auth-area .dropdown-menu {
+      min-width: 200px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    @media (max-width: 1199px) {
+      .user-auth-area {
+        margin-left: 10px;
+      }
+    }
+
+    @media (max-width: 991px) {
+      .user-auth-area {
+        position: absolute;
+        right: 15px;
+        top: 15px;
+      }
+    }
   </style>
 </head>
 
@@ -102,6 +142,65 @@
         </ul>
         <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
       </nav>
+
+      <!-- 用戶認證區域 -->
+      <div class="user-auth-area">
+        <!-- 未登入時顯示登入按鈕 -->
+        <div id="login-section">
+          <a href="/oauth2/authorization/google" class="btn btn-primary btn-sm">
+            <i class="bi bi-google"></i> Google 登入
+          </a>
+        </div>
+
+        <!-- 已登入時顯示用戶資訊 -->
+        <div id="user-section" class="d-none">
+          <div class="dropdown">
+            <button class="btn btn-light btn-sm dropdown-toggle d-flex align-items-center" type="button" id="userMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+              <img id="user-avatar" src="/assets/img/default-avatar.png" alt="User Avatar" class="rounded-circle me-2" width="28" height="28">
+              <span id="user-name">用戶</span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenuButton">
+              <li><h6 class="dropdown-header">帳戶選項</h6></li>
+              <li><a id="admin-link" class="dropdown-item" href="/admin" style="display: none;">
+                <i class="bi bi-gear"></i> 管理後台
+              </a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="javascript:void(0)" onclick="handleLogout()">
+                <i class="bi bi-box-arrow-right"></i> 登出
+              </a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- 用戶登入區域 -->
+      <div class="user-auth-area d-flex align-items-center">
+        <!-- 未登入狀態 -->
+        <div id="login-section" class="d-none">
+          <a href="/oauth2/authorization/google" class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-google"></i> Google 登入
+          </a>
+        </div>
+        
+        <!-- 已登入狀態 -->
+        <div id="user-section" class="d-none dropdown">
+          <a class="dropdown-toggle d-flex align-items-center text-decoration-none" 
+             href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <img id="user-avatar" src="" alt="User Avatar" 
+                 class="rounded-circle me-2" width="32" height="32">
+            <span id="user-name"></span>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="/admin" id="admin-link-mobile" style="display: none;">
+              <i class="bi bi-gear"></i> 管理後台
+            </a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="/logout">
+              <i class="bi bi-box-arrow-right"></i> 登出
+            </a></li>
+          </ul>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -469,6 +568,70 @@
 
   <!-- Main JS File -->
   <script src="/assets/js/main.js"></script>
+
+  <!-- 用戶認證 JavaScript -->
+  <script>
+    // 檢查用戶登入狀態
+    function checkUserAuth() {
+      fetch('/api/user')
+        .then(response => response.json())
+        .then(data => {
+          console.log('用戶認證資料:', data);
+          const loginSection = document.getElementById('login-section');
+          const userSection = document.getElementById('user-section');
+          const adminLink = document.getElementById('admin-link');
+          const adminLinkMobile = document.getElementById('admin-link-mobile');
+          
+          if (loginSection && userSection && data.authenticated) {
+            // 用戶已登入
+            loginSection.classList.add('d-none');
+            userSection.classList.remove('d-none');
+            
+            // 設置用戶資訊
+            document.getElementById('user-name').textContent = data.name;
+            document.getElementById('user-avatar').src = data.profilePicture || '/assets/img/default-avatar.png';
+            
+            // 如果是管理員，顯示管理後台連結
+            if (data.isAdmin) {
+              if (adminLink) adminLink.style.display = 'block';
+              if (adminLinkMobile) adminLinkMobile.style.display = 'block';
+            }
+          } else if (loginSection && userSection) {
+            // 用戶未登入
+            loginSection.classList.remove('d-none');
+            userSection.classList.add('d-none');
+          }
+        })
+        .catch(error => {
+          console.error('Error checking user auth:', error);
+          // 錯誤時顯示登入按鈕
+          const loginSection = document.getElementById('login-section');
+          const userSection = document.getElementById('user-section');
+          if (loginSection && userSection) {
+            loginSection.classList.remove('d-none');
+            userSection.classList.add('d-none');
+          }
+        });
+    }
+    
+    // 顯示 Google 設定提醒
+    function showGoogleSetupAlert() {
+      alert('Google 登入功能需要先設定！\n\n請按照以下步驟：\n1. 參考 google-oauth-setup-guide.md\n2. 在 Google Cloud Console 設定 OAuth2\n3. 更新 application.yml 中的 Client ID 和 Secret\n\n設定完成後重新啟動應用程式。');
+    }
+
+    // 處理登出
+    function handleLogout() {
+      // 創建一個隱藏的表單來執行 POST 登出
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = '/logout';
+      document.body.appendChild(form);
+      form.submit();
+    }
+
+    // 頁面載入時檢查用戶狀態
+    document.addEventListener('DOMContentLoaded', checkUserAuth);
+  </script>
 
 </body>
 </html>

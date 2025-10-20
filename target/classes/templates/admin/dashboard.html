@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-TW" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理後台 - DN Kartrider Team</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background-color: #f8f9fa;
+        }
+        .main-content {
+            min-height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- 側邊欄 -->
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <h5 class="px-3 text-muted">管理後台</h5>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/admin">
+                                <i class="bi bi-house-door"></i> 首頁
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/user-management/users">
+                                <i class="bi bi-people"></i> 用戶管理
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/">
+                                <i class="bi bi-arrow-left"></i> 回到網站
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- 主要內容 -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">管理後台首頁</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <span class="text-muted">
+                            歡迎，<span th:text="${currentUser.name}">管理員</span>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="bi bi-people text-primary"></i> 用戶管理
+                                </h5>
+                                <p class="card-text">管理網站用戶的權限和角色設定</p>
+                                <a href="/admin/user-management/users" class="btn btn-primary">
+                                    <i class="bi bi-gear"></i> 管理用戶
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="bi bi-images text-success"></i> 圖片管理
+                                </h5>
+                                <p class="card-text">管理網站的圖片和媒體檔案</p>
+                                <a href="/admin/images" class="btn btn-success">
+                                    <i class="bi bi-image"></i> 管理圖片
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="bi bi-info-circle text-info"></i> 系統資訊
+                                </h5>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p><strong>當前用戶：</strong> <span th:text="${currentUser.name}">管理員</span></p>
+                                        <p><strong>用戶角色：</strong> <span class="badge bg-primary" th:text="${currentUser.role}">ADMIN</span></p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p><strong>Email：</strong> <span th:text="${currentUser.email}">admin@example.com</span></p>
+                                        <p><strong>最後登入：</strong> <span th:text="${#temporals.format(currentUser.lastLogin, 'yyyy-MM-dd HH:mm')}">2024-01-01 12:00</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

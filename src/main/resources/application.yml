@@ -54,6 +54,26 @@ spring:
     multipart:
       max-file-size: -1
       max-request-size: -1
+  
+  # OAuth2 配置 (Google 登入)
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: 93105622287-dtrtrmpdiu2eljgcu1ufcg1bj9d2spc9.apps.googleusercontent.com
+            client-secret: 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
+            scope: 
+              - openid
+              - profile  
+              - email
+        provider:
+          google:
+            authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
+            token-uri: https://oauth2.googleapis.com/token
+            user-info-uri: https://www.googleapis.com/oauth2/v2/userinfo
+            jwk-set-uri: https://www.googleapis.com/oauth2/v3/certs
+            user-name-attribute: sub
 
 # 伺服器配置
 server:

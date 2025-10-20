@@ -3,11 +3,15 @@ package com.dnrush.controller;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.StreamSupport;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -25,11 +29,13 @@ import com.dnrush.entity.ImageResource;
 import com.dnrush.entity.NavigationItem;
 import com.dnrush.entity.SiteContent;
 import com.dnrush.entity.TeamMember;
+import com.dnrush.entity.User;
 import com.dnrush.service.ContactService;
 import com.dnrush.service.ImageService;
 import com.dnrush.service.NavigationService;
 import com.dnrush.service.SiteContentService;
 import com.dnrush.service.TeamMemberService;
+import com.dnrush.service.UserService;
 
 @Controller
 @RequestMapping("/admin")
@@ -52,10 +58,27 @@ public class AdminController {
     @Autowired
     private ContactService contactService;
     
+    @Autowired
+    private UserService userService;
+    
     // 管理首頁
     @GetMapping
-    public String adminIndex(Model model) {
+    public String adminIndex(@AuthenticationPrincipal OAuth2User principal, Model model) {
         try {
+            // 檢查用戶權限並獲取當前用戶資訊
+            if (principal != null) {
+                String googleId = principal.getAttribute("sub");
+                Optional<User> currentUserOpt = userService.findByGoogleId(googleId);
+                
+                if (currentUserOpt.isPresent() && userService.isAdmin(currentUserOpt.get())) {
+                    model.addAttribute("currentUser", currentUserOpt.get());
+                } else {
+                    return "redirect:/?error=access_denied";
+                }
+            } else {
+                return "redirect:/oauth2/authorization/google";
+            }
+            
             // 統計數據
             long contactSubmissionCount = contactService.getTotalCount();
             long activeTeamMemberCount = teamMemberService.getActiveCount();
@@ -535,4 +558,111 @@ public class AdminController {
         
         return ResponseEntity.ok(response);
     }
+    
+    // ==================== 用戶管理功能 ====================
+    
+    /**
+     * 用戶管理頁面
+     */
+    @GetMapping("/users")
+    public String usersManagement(@AuthenticationPrincipal OAuth2User principal, Model model) {
+        if (principal == null) {
+            return "redirect:/oauth2/authorization/google";
+        }
+        
+        // 檢查當前用戶是否為管理員
+        String googleId = principal.getAttribute("sub");
+        Optional<User> currentUserOpt = userService.findByGoogleId(googleId);
+        
+        if (currentUserOpt.isEmpty() || !userService.isAdmin(currentUserOpt.get())) {
+            return "redirect:/?error=access_denied";
+        }
+        
+        // 獲取所有用戶
+        List<User> users = StreamSupport.stream(userService.getAllUsers().spliterator(), false)
+                .toList();
+        
+        model.addAttribute("users", users);
+        
+        // 如果用戶不存在，創建一個臨時用戶對象
+        if (currentUserOpt.isPresent()) {
+            model.addAttribute("currentUser", currentUserOpt.get());
+        } else {
+            // 創建一個基本的用戶對象用於顯示
+            User tempUser = new User();
+            tempUser.setName(principal.getAttribute("name"));
+            tempUser.setEmail(principal.getAttribute("email"));
+            model.addAttribute("currentUser", tempUser);
+        }
+        
+        return "admin/users";
+    }
+    
+    /**
+     * 修改用戶角色
+     */
+    @PostMapping("/users/{userId}/role")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> updateUserRole(@PathVariable Long userId, 
+                                           @RequestParam String role,
+                                           @AuthenticationPrincipal OAuth2User principal) {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            if (principal == null) {
+                response.put("success", false);
+                response.put("message", "未登入");
+                return ResponseEntity.ok(response);
+            }
+            
+            // 獲取當前用戶
+            String googleId = principal.getAttribute("sub");
+            Optional<User> currentUserOpt = userService.findByGoogleId(googleId);
+            
+            if (currentUserOpt.isEmpty()) {
+                response.put("success", false);
+                response.put("message", "用戶不存在");
+                return ResponseEntity.ok(response);
+            }
+            
+            User currentUser = currentUserOpt.get();
+            
+            // 檢查是否嘗試修改自己的角色
+            if (currentUser.getId().equals(userId)) {
+                response.put("success", false);
+                response.put("message", "不能修改自己的角色");
+                return ResponseEntity.ok(response);
+            }
+            
+            // 轉換角色
+            User.Role newRole;
+            try {
+                newRole = User.Role.valueOf(role.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                response.put("success", false);
+                response.put("message", "無效的角色: " + role);
+                return ResponseEntity.ok(response);
+            }
+            
+            // 更新用戶角色
+            userService.updateUserRole(userId, newRole, currentUser);
+            
+            response.put("success", true);
+            response.put("message", "角色更新成功");
+            
+        } catch (SecurityException e) {
+            response.put("success", false);
+            response.put("message", "權限不足");
+        } catch (Exception e) {
+            logger.error("Error updating user role", e);
+            response.put("success", false);
+            response.put("message", "更新失敗: " + e.getMessage());
+        }
+        
+        return ResponseEntity.ok(response);
+    }
+    
+
+    
+
 }
